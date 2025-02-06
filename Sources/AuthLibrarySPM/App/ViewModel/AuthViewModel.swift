@@ -27,6 +27,7 @@ public class AuthViewModel: ObservableObject {
     
     private func observeErrorMessage() {
         authManager.$errorMessage
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] errorMessage in
                 if errorMessage != nil && self?.showError == false {
                     self?.showError = true

@@ -17,7 +17,6 @@ open class AuthManager: ObservableObject {
     
     private let authService: AuthServiceProtocol
     
-//    @MainActor
     nonisolated
         public init(authService: AuthServiceProtocol = AuthService()) {
             self.authService = authService
@@ -43,7 +42,6 @@ open class AuthManager: ObservableObject {
         }
     }
     
-//    @MainActor
     nonisolated
     open func checkUserState() {
         authService.checkUserState { [weak self] result in
@@ -107,7 +105,7 @@ open class AuthManager: ObservableObject {
             }
         }
     }
-    
+
     open func handleError(_ error: AuthError) {
         switch error {
         case .awsError(let awsError):

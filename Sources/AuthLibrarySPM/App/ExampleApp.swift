@@ -9,7 +9,7 @@
 import SwiftUI
 
 @available(iOS 14.0, *)
-@main
+//@main
 struct TestAppApp: App {
     @StateObject var authManager = AuthManager()
     var body: some Scene {

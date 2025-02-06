@@ -17,10 +17,12 @@ open class AuthManager: ObservableObject {
     
     private let authService: AuthServiceProtocol
     
-    @MainActor
-    public init(authService: AuthServiceProtocol = AuthService()) {
-        self.authService = authService
-        checkUserState()
+//    @MainActor
+    nonisolated
+        public init(authService: AuthServiceProtocol = AuthService()) {
+            self.authService = authService
+            checkUserState()
+        
     }
     
     open func showSignUp() {
@@ -41,7 +43,8 @@ open class AuthManager: ObservableObject {
         }
     }
     
-    @MainActor
+//    @MainActor
+    nonisolated
     open func checkUserState() {
         authService.checkUserState { [weak self] result in
             switch result {

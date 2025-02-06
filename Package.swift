@@ -33,7 +33,8 @@ let package = Package(
         ),
         .testTarget(
             name: "AuthLibrarySPMTests",
-            dependencies: ["AuthLibrarySPM"]
+            dependencies: ["AuthLibrarySPM"],
+            resources: [.process("Resources/awsconfiguration.json")]
         ),
     ]
 )

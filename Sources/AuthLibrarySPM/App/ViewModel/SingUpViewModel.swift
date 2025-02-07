@@ -20,7 +20,6 @@ public class SignUpViewModel: AuthViewModel {
         super.init(authManager: authManager)
     }
     
-    @MainActor
     public func signUp() {
         guard !email.isEmpty, !password.isEmpty, password == confirmPassword else {
             authManager.errorMessage = "Please enter a valid email and matching passwords."

@@ -18,17 +18,17 @@ final class LoginViewModelTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        authManager = MockAuthManager()
-        viewModel = LoginViewModel(authManager: authManager)
+            authManager = MockAuthManager()
+            viewModel = LoginViewModel(authManager: authManager)
     }
-    
+
     override func tearDown() {
-        authManager = nil
-        viewModel = nil
+            authManager = nil
+            viewModel = nil
         super.tearDown()
     }
-    @MainActor
-    func testLoginSuccess() throws {
+
+    func testLoginSuccess() async {
         // Given
         viewModel.email = "example@mail.com"
         viewModel.password = "password123_"
@@ -42,9 +42,8 @@ final class LoginViewModelTests: XCTestCase {
         XCTAssertFalse(viewModel.showError)
         
     }
-
-    @MainActor
-    func testLoginFail() {
+    
+    func testLoginFail() async throws {
         // Given
         viewModel.email = "Example@example.com"
         viewModel.password = "password123/"
@@ -59,7 +58,7 @@ final class LoginViewModelTests: XCTestCase {
         XCTAssertEqual(authManager.errorMessage, "Invalid credentials")
     }
     
-    func testShowSignUp() {
+    func testShowSignUp() async throws {
         // When
         viewModel.signUp()
         

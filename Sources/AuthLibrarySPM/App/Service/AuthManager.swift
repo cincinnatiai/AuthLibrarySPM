@@ -17,11 +17,9 @@ open class AuthManager: ObservableObject {
     
     private let authService: AuthServiceProtocol
     
-    nonisolated
         public init(authService: AuthServiceProtocol = AuthService()) {
             self.authService = authService
-            checkUserState()
-        
+                checkUserState()
     }
     
     open func showSignUp() {
@@ -42,20 +40,19 @@ open class AuthManager: ObservableObject {
         }
     }
     
-    nonisolated
     open func checkUserState() {
         authService.checkUserState { [weak self] result in
-            switch result {
-            case .success(let userState):
-                self?.isLoggedIn = (userState == .signedIn)
-                self?.authState = self?.isLoggedIn == true ? .session(user: "Session initiated") : .login
-            case .failure(let error):
-                self?.handleError(error)
+            guard let self = self else { return }
+                switch result {
+                case .success(let userState):
+                    self.isLoggedIn = (userState == .signedIn)
+                    self.authState = self.isLoggedIn == true ? .session(user: "Session initiated") : .login
+                case .failure(let error):
+                    self.handleError(error)
             }
         }
     }
     
-    @MainActor
     open func signUp(username: String, password: String, attributes: [String: String]) {
         authService.signUp(username: username, password: password, attributes: attributes) { [weak self] result in
             switch result {
@@ -69,7 +66,6 @@ open class AuthManager: ObservableObject {
         }
     }
     
-    @MainActor
     open func confirmSignUp(username: String, confirmationCode: String) {
         authService.confirmSignUp(username: username, confirmationCode: confirmationCode) { [weak self] result in
             switch result {
@@ -81,7 +77,6 @@ open class AuthManager: ObservableObject {
         }
     }
     
-    @MainActor
     open func signIn(username: String, password: String) {
         authService.signIn(username: username, password: password) { [weak self] result in
             if case .success(let signInResult) = result, signInResult == .signedIn {
@@ -93,7 +88,6 @@ open class AuthManager: ObservableObject {
         }
     }
     
-    @MainActor
     open func signOut() {
         authService.signOut { [weak self] result in
             switch result {

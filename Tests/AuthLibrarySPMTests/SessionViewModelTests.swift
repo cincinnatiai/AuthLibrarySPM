@@ -31,7 +31,6 @@ final class SessionViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.user, "user@mail.com")
     }
     
-    @MainActor
     func testLogout() {
         // When
         viewModel.logout()

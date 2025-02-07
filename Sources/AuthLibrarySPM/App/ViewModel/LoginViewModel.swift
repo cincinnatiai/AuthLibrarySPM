@@ -20,7 +20,7 @@ public class LoginViewModel: AuthViewModel {
         loadCredentials()
     }
 
-    @MainActor public func login() {
+    public func login() {
         authManager.signIn(username: email, password: password)
         handleActionResult()
     }

@@ -16,7 +16,7 @@ public class SessionViewModel: AuthViewModel {
         super.init(authManager: authManager)
     }
     
-    @MainActor public func logout() {
+    public func logout() {
         authManager.signOut()
     }
 }

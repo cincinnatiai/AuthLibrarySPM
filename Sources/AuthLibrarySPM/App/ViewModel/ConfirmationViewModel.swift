@@ -17,7 +17,7 @@ public class ConfirmationViewModel: AuthViewModel {
         super.init(authManager: authManager)
     }
     
-    @MainActor public func confirmSignUp() {
+    public func confirmSignUp() {
         authManager.confirmSignUp(username: username, confirmationCode: confirmationCode)
         handleActionResult()
     }

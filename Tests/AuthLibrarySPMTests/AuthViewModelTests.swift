@@ -8,33 +8,27 @@
 
 import Testing
 @testable import AuthLibrarySPM
-import XCTest
 
-@available(iOS 13.0, *)
-final class AuthViewModelTests: XCTestCase {
-    var authManager: MockAuthManager!
-    var viewModel: AuthViewModel!
-    
-    override func setUp() {
-        super.setUp()
-        authManager = MockAuthManager()
-        viewModel = AuthViewModel(authManager: authManager)
+@Suite
+@MainActor
+struct AuthViewModelTests {
+    var authManager: MockAuthManager
+    var viewModel: AuthViewModel
+
+    init() {
+        self.authManager = MockAuthManager()
+        self.viewModel = AuthViewModel(authManager: authManager)
     }
-    
-    override func tearDown() {
-        authManager = nil
-        viewModel = nil
-        super.tearDown()
-    }
-    
+
+    @Test
     func testAuthStateChanges() {
         // Given
         authManager.authState = .login
-        
+
         // When
         viewModel.clearErrorMessage()
-        
+
         // Then
-        XCTAssertEqual(authManager.errorMessage, nil)
+        #expect(authManager.errorMessage == nil)
     }
 }

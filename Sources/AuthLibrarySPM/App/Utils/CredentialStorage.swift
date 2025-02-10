@@ -18,7 +18,7 @@ final public class KeychainManager {
     }
     
     public func set(_ value: String, key: String) {
-        keychain.set(value, forKey: key)
+        keychain.set(value, forKey: key, withAccess: .accessibleAfterFirstUnlock)
     }
     
     public func get(key: String) -> String? {

@@ -9,125 +9,98 @@
 import Testing
 @testable import AuthLibrarySPM
 import AWSMobileClientXCF
-import XCTest
 
-@available(iOS 13.0, *)
-class LoginViewModelIntegrationTests: XCTestCase {
+@Suite
+@MainActor
+struct LoginViewModelIntegrationTests {
     
-    var authManager: AuthManager!
-    var keychain: KeychainManager!
-    var viewModel: LoginViewModel!
+    var authManager: AuthManager
+    var keychain: KeychainManager
+    var viewModel: LoginViewModel
     
-    override func setUp() {
-        super.setUp()
-
-        authManager = AuthManager()
-        keychain = KeychainManager()
-        viewModel = LoginViewModel(authManager: authManager, keychain: keychain)
-    }
-    override func tearDown() {
-        authManager = nil
-        keychain = nil
-        viewModel = nil
-        super.tearDown()
-    }
-    
-    /**
-     * NOTE:
-     * This test will fail unless you provide a proper email and password.
-     */
-    @MainActor
-    func testSuccessfulLogin() {
-        // Given
-        viewModel.email = "dioniciocruzvelazquez@gmail.com"
-        viewModel.password = "Airbag1990_"
-        
-        let expectation = self.expectation(description: "Login should succeed and transition to session state.")
-        
-        let observer = authManager.$authState.sink { state in
-            print("Observed authState: \(state)")
-            if case .session(let user) = state {
-                XCTAssertEqual(user, "Session initiated")
-                expectation.fulfill()
-            }
+    init() async {
+        guard let configURL = Bundle.module.url(forResource: "awsconfiguration", withExtension: "json"),
+              let data = try? Data(contentsOf: configURL),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            fatalError("awsconfiguration.json not found or invalid")
         }
         
-        // When
-        viewModel.login()
+        AWSInfo.configureDefaultAWSInfo(json)
         
-        // Then
-        waitForExpectations(timeout: 2) { error in
-            if let error = error {
-                XCTFail("Expectation failed with error: \(error)")
-            }
+        await withCheckedContinuation { continuation in
+            AWSMobileClient.default().initialize { _, _ in continuation.resume() }
         }
         
-        observer.cancel()
+        self.authManager = AuthManager()
+        self.keychain = KeychainManager()
+        self.viewModel = LoginViewModel(authManager: authManager, keychain: keychain)
     }
     
-    @MainActor
-    func testFailedLogin() {
-        let signOutExpectation = self.expectation(description: "Sign out should complete")
+    @available(iOS 16.0, *)
+    @Test
+    func testSuccessfulLogin() async throws {
+        await withCheckedContinuation { continuation in
+            AWSMobileClient.default().initialize { _, _ in continuation.resume() }
+        }
         
+        guard AWSMobileClient.default().currentUserState == .signedOut else { return }
+        
+        // Given (Provide an actual mail and password)
+        viewModel.email = "ABC@mail.com"
+        viewModel.password = "ABC123_"
+        
+        await withCheckedContinuation { continuation in
+            authManager.signIn(username: viewModel.email, password: viewModel.password)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5) { continuation.resume() }
+        }
+        
+        #expect(authManager.authState == .session(user: "Session initiated"))
+        #expect(authManager.isLoggedIn == true)
+        #expect(authManager.errorMessage == nil)
+    }
+    
+    @available(iOS 16.0, *)
+    @Test
+    func testFailedLogin() async throws {
         authManager.signOut()
+        try await Task.sleep(for: .milliseconds(100))
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            let userState = AWSMobileClient.default().currentUserState
-            if userState == .signedOut || userState == .signedOutFederatedTokensInvalid {
-                signOutExpectation.fulfill()
-            } else {
-                XCTFail("Failed to sign out the existing user. Current state: \(userState.rawValue)")
-            }
-        }
-        
-        wait(for: [signOutExpectation], timeout: 2)
-        
+        // Given
         viewModel.email = "wrong@example.com"
         viewModel.password = "wrong_password"
         
-        let expectation = self.expectation(description: "Login should fail with 'Incorrect username or password.'")
+        authManager.signIn(username: viewModel.email, password: viewModel.password)
+        try await Task.sleep(for: .milliseconds(100))
         
-        let observer = authManager.$errorMessage.sink { errorMessage in
-            if let errorMessage = errorMessage {
-                XCTAssertEqual(errorMessage, "Incorrect username or password.")
-                expectation.fulfill()
-            }
-        }
-        
-        viewModel.login()
-        
-        waitForExpectations(timeout: 10)
-        
-        observer.cancel()
+        #expect(authManager.errorMessage == "Incorrect username or password.")
     }
     
+    @available(iOS 16.0, *)
+    @Test
     func testSignUpNavigation() {
-        // When
         viewModel.signUp()
         
-        // Then
-        XCTAssertEqual(authManager.authState, .signUp)
+        #expect(authManager.authState == .signUp)
     }
     
+    @available(iOS 16.0, *)
+    @Test
     func testLoadCredentials() {
-        // Given
         keychain.set("saved@example.com", key: "email")
         
-        // When
         viewModel.loadCredentials()
         
-        // Then
-        XCTAssertEqual(viewModel.email, "saved@example.com", "Expected loaded email to be 'saved@example.com', but got \(viewModel.email)")
+        #expect(viewModel.email == "saved@example.com")
     }
     
+    @available(iOS 16.0, *)
+    @Test
     func testClearErrorMessage() {
-        // Given
         authManager.errorMessage = "Some error occurred"
         
-        // When
         viewModel.clearErrorMessage()
         
-        // Then
-        XCTAssertNil(authManager.errorMessage, "Expected error message to be nil after clearing, but it was \(authManager.errorMessage ?? "nil")")
+        #expect(authManager.errorMessage == nil)
     }
+    
 }

@@ -5,7 +5,7 @@
 //  Created by Dionicio Cruz Velázquez on 2/5/25.
 //  Copyright © 2025 CocoaPods. All rights reserved.
 //
-
+//
 import Testing
 @testable import AuthLibrarySPM
 import AWSMobileClientXCF
@@ -21,12 +21,12 @@ class MockAuthService: AuthServiceProtocol {
         completion(signUpResult ?? .failure(.unknown))
     }
 
-    func signIn(username: String, password: String, completion: @escaping (Result<SignInState, AuthError>) -> Void) {
-        completion(signInResult ?? .failure(.unknown))
-    }
-
     func confirmSignUp(username: String, confirmationCode: String, completion: @escaping (Result<Void, AuthError>) -> Void) {
         completion(confirmSignUpResult ?? .failure(.unknown))
+    }
+
+    func signIn(username: String, password: String, completion: @escaping (Result<SignInState, AuthError>) -> Void) {
+        completion(signInResult ?? .failure(.unknown))
     }
 
     func signOut(completion: @escaping (Result<Void, AuthError>) -> Void) {
@@ -34,8 +34,6 @@ class MockAuthService: AuthServiceProtocol {
     }
 
     func checkUserState(completion: @escaping (Result<UserState, AuthError>) -> Void) {
-        if let result = checkUserStateResult {
-            completion(result)
-        }
+        completion(checkUserStateResult ?? .failure(.unknown))
     }
 }

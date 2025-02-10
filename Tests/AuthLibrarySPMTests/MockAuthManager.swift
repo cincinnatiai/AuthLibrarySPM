@@ -10,7 +10,6 @@ import AuthLibrarySPM
 import Foundation
 
 @available(iOS 13.0, *)
-//@MainActor
 class MockAuthManager: AuthManager {
     init() {}
     var signInCalled = false

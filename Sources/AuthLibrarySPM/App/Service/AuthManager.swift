@@ -10,16 +10,16 @@ import AWSMobileClientXCF
 import SwiftUI
 
 @available(iOS 13.0, *)
+@MainActor
 open class AuthManager: ObservableObject {
     @Published public var authState: AuthState = .login
     @Published public var isLoggedIn: Bool = false
     @Published public var errorMessage: String? = nil
     
     private let authService: AuthServiceProtocol
-    
-        public init(authService: AuthServiceProtocol = AuthService()) {
-            self.authService = authService
-                checkUserState()
+    public init(authService: AuthServiceProtocol = AuthService()) {
+        self.authService = authService
+        checkUserState()
     }
     
     open func showSignUp() {
@@ -43,12 +43,12 @@ open class AuthManager: ObservableObject {
     open func checkUserState() {
         authService.checkUserState { [weak self] result in
             guard let self = self else { return }
-                switch result {
-                case .success(let userState):
-                    self.isLoggedIn = (userState == .signedIn)
-                    self.authState = self.isLoggedIn == true ? .session(user: "Session initiated") : .login
-                case .failure(let error):
-                    self.handleError(error)
+            switch result {
+            case .success(let userState):
+                self.isLoggedIn = (userState == .signedIn)
+                self.authState = self.isLoggedIn == true ? .session(user: "Session initiated") : .login
+            case .failure(let error):
+                self.handleError(error)
             }
         }
     }
@@ -94,12 +94,13 @@ open class AuthManager: ObservableObject {
             case .success:
                 self?.isLoggedIn = false
                 self?.checkUserState()
+                self?.errorMessage = nil
             case .failure(let error):
                 self?.handleError(error)
             }
         }
     }
-
+    
     open func handleError(_ error: AuthError) {
         switch error {
         case .awsError(let awsError):

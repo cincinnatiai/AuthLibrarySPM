@@ -8,10 +8,11 @@
 import SwiftUI
 
 @available(iOS 13.0, *)
+@MainActor
 public class LoginViewModel: AuthViewModel {
     @Published public var email: String = ""
     @Published public var password: String = ""
-    
+
     private let keychain: KeychainManager
 
     public init(authManager: AuthManager, keychain: KeychainManager = KeychainManager()) {

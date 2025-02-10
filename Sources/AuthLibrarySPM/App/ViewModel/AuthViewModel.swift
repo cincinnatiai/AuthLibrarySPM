@@ -9,9 +9,10 @@ import SwiftUI
 import Combine
 
 @available(iOS 13.0, *)
+@MainActor
 public class AuthViewModel: ObservableObject {
     @Published public var showError: Bool = false
-    public var authManager: AuthManager
+    public let authManager: AuthManager
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -29,9 +30,7 @@ public class AuthViewModel: ObservableObject {
         authManager.$errorMessage
             .receive(on: DispatchQueue.main)
             .sink { [weak self] errorMessage in
-                if errorMessage != nil && self?.showError == false {
-                    self?.showError = true
-                }
+                self?.showError = (errorMessage != nil)
             }
             .store(in: &cancellables)
     }
@@ -39,4 +38,5 @@ public class AuthViewModel: ObservableObject {
     public func handleActionResult() {
         showError = authManager.errorMessage != nil
     }
+    
 }

@@ -8,67 +8,60 @@
 
 import Testing
 @testable import AuthLibrarySPM
-import XCTest
 
-@available(iOS 13.0, *)
-final class SignUpViewModelTests: XCTestCase {
-    var authManager: MockAuthManager!
-    var viewModel: SignUpViewModel!
-    
-    override func setUp() {
-        super.setUp()
-        authManager = MockAuthManager()
-        viewModel = SignUpViewModel(authManager: authManager)
-    }
-    
-    override func tearDown() {
-        authManager = nil
-        viewModel = nil
-        super.tearDown()
+@Suite
+@MainActor
+struct SignUpViewModelTests {
+    var authManager: MockAuthManager
+    var viewModel: SignUpViewModel
+
+    init() {
+        self.authManager = MockAuthManager()
+        self.viewModel = SignUpViewModel(authManager: authManager)
     }
 
-    @MainActor
-    func testSignUpSuccess() throws {
+    @Test
+    func testSignUpSuccess() {
         // Given
         viewModel.email = "newuser@example.com"
         viewModel.password = "password123"
         viewModel.confirmPassword = "password123"
-        
+
         // When
         viewModel.signUp()
-        
+
         // Then
-        XCTAssertTrue(authManager.showSignUpCalled)
-        XCTAssertEqual(authManager.authState, .confirmCode(username: "newuser@example.com"))
+        #expect(authManager.showSignUpCalled == true)
+        #expect(authManager.authState == .confirmCode(username: "newuser@example.com"))
     }
 
-    @MainActor
-    func testSignUpFailureDueToExistingUser() throws {
+    @Test
+    func testSignUpFailureDueToExistingUser() {
         // Given
         viewModel.email = "existinguser@example.com"
         viewModel.password = "password123"
         viewModel.confirmPassword = "password123"
-        
+
         // When
         viewModel.signUp()
-        
+
         // Then
-        XCTAssertTrue(authManager.showSignUpCalled)
-        XCTAssertEqual(authManager.authState, .login)
-        XCTAssertEqual(authManager.errorMessage, "User already exists")
+        #expect(authManager.showSignUpCalled == true)
+        #expect(authManager.authState == .login)
+        #expect(authManager.errorMessage == "User already exists")
     }
 
-    @MainActor
+    @Test
     func testSignUpFailureDueToMismatchedPasswords() {
         // Given
         viewModel.email = "newuser@example.com"
         viewModel.password = "password123"
         viewModel.confirmPassword = "password456"
-        
+
         // When
         viewModel.signUp()
-        
+
         // Then
-        XCTAssertEqual(authManager.authState, .login)
+        #expect(authManager.authState == .login)
     }
 }

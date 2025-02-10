@@ -8,7 +8,7 @@
 import AWSMobileClientXCF
 
 extension AWSMobileClientError {
-    var stringMessage: String {
+    public var stringMessage: String {
         switch self {
         case .aliasExists(let message),
                 .codeDeliveryFailure(let message),

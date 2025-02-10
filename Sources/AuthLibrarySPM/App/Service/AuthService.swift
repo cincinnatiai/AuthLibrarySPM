@@ -7,6 +7,7 @@
 
 import AWSMobileClientXCF
 
+@available(iOS 13.0, *)
 public class AuthService: AuthServiceProtocol {
 
     public init() { }

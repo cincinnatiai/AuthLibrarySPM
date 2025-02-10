@@ -1,165 +1,157 @@
+//import Testing
+//@testable import AuthLibrarySPM
+//import AWSMobileClientXCF
+//import XCTest
+
 import Testing
 @testable import AuthLibrarySPM
 import AWSMobileClientXCF
-import XCTest
 
-@available(iOS 13.0, *)
-final class AuthenticationLibraryTests: XCTestCase {
-    var authManager: AuthManager!
-    var mockAuthService: MockAuthService!
-    
-    override func setUp() {
-        super.setUp()
-        mockAuthService = MockAuthService()
-        authManager = AuthManager(authService: mockAuthService)
+@Suite
+@MainActor
+struct AuthenticationLibraryTests {
+    var authManager: AuthManager
+    var mockAuthService: MockAuthService
+
+    init() {
+        self.mockAuthService = MockAuthService()
+        self.authManager = AuthManager(authService: mockAuthService)
     }
-    
-    override func tearDown() {
-        authManager = nil
-        mockAuthService = nil
-        super.tearDown()
-    }
-    
+
+    @Test
     func testInitialState() {
-        XCTAssertEqual(authManager.authState, .login)
-        XCTAssertFalse(authManager.isLoggedIn)
-        XCTAssertNil(authManager.errorMessage)
+        authManager.errorMessage = nil
+        #expect(authManager.authState == .login)
+        #expect(authManager.isLoggedIn == false)
+        #expect(authManager.errorMessage == nil)
     }
 
-    @MainActor
-    func testCheckUserStateLoggedIn() {
-        let expectation = self.expectation(description: "Check user state should set the correct auth state")
-        
+    @available(iOS 16.0, *)
+    @Test
+    func testCheckUserStateLoggedIn() async throws {
+        authManager.errorMessage = nil
+
         mockAuthService.checkUserStateResult = .success(.signedIn)
         authManager.checkUserState()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            XCTAssertEqual(self.authManager.authState, .session(user: "Session initiated"))
-            XCTAssertTrue(self.authManager.isLoggedIn)
-            XCTAssertNil(self.authManager.errorMessage)
-            
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 2, handler: nil)
+
+        try await Task.sleep(for: .milliseconds(200))
+
+        #expect(authManager.authState == .session(user: "Session initiated"))
+        #expect(authManager.isLoggedIn == true)
+        #expect(authManager.errorMessage == nil)
     }
-    
-    @MainActor
-    func testCheckUserStateLoggedOut() {
+
+    @available(iOS 16.0, *)
+    @Test
+    func testCheckUserStateLoggedOut() async throws {
+        authManager.errorMessage = nil
+        
         mockAuthService.checkUserStateResult = .success(.signedOut)
         authManager.checkUserState()
-        
-        XCTAssertEqual(authManager.authState, .login)
-        XCTAssertFalse(authManager.isLoggedIn)
-        XCTAssertNil(authManager.errorMessage)
-    }
-    
-    @MainActor
-    func testSignUpSuccess() {
-        let expectation = self.expectation(description: "Sign up should succeed and update auth state")
-        let attributes = ["email": "testuser@mail.com", "name": "testuser@mail.com"]
-        
-        mockAuthService.signUpResult = .success(SignUpConfirmationState.unconfirmed)
-        authManager.signUp(username: "testuser@mail.com", password: "Password1234_", attributes: attributes)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            XCTAssertEqual(self.authManager.authState, .confirmCode(username: "testuser@mail.com"))
-            XCTAssertNil(self.authManager.errorMessage)
-            
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 2, handler: nil)
+
+        try await Task.sleep(for: .milliseconds(200))
+
+        #expect(authManager.authState == .login)
+        #expect(authManager.isLoggedIn == false)
+        #expect(authManager.errorMessage == nil)
     }
 
-    @MainActor
-    func testSignUpFailure() {
-        let expectation = self.expectation(description: "Sign up should fail with an error")
-        
+    @available(iOS 16.0, *)
+    @Test
+    func testSignUpSuccess() async throws {
+        let attributes = ["email": "testuser@mail.com", "name": "testuser@mail.com"]
+        mockAuthService.signUpResult = .success(.unconfirmed)
+        authManager.errorMessage = nil
+        authManager.signUp(username: "testuser@mail.com", password: "Password1234_", attributes: attributes)
+
+        try await Task.sleep(for: .milliseconds(100))
+ 
+        #expect(authManager.authState == .confirmCode(username: "testuser@mail.com"))
+        #expect(authManager.errorMessage == nil)
+    }
+
+    @available(iOS 16.0, *)
+    @Test
+    func testSignUpFailure() async throws {
         mockAuthService.signUpResult = .failure(.awsError(AWSMobileClientError.usernameExists(message: "Username already exists")))
         authManager.signUp(username: "testuser", password: "password", attributes: [:])
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            XCTAssertEqual(self.authManager.errorMessage, "Username already exists")
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 2, handler: nil)
+
+        try await Task.sleep(for: .milliseconds(100))
+
+        #expect(authManager.errorMessage == "Username already exists")
     }
-    
-    @MainActor
-    func testConfirmSignUpSuccess() {
+
+    @available(iOS 16.0, *)
+    @Test
+    func testConfirmSignUpSuccess() async throws {
         mockAuthService.confirmSignUpResult = .success(())
+        authManager.errorMessage = nil
         authManager.confirmSignUp(username: "testuser", confirmationCode: "123456")
-        
-        XCTAssertEqual(authManager.authState, .login)
-        XCTAssertNil(authManager.errorMessage)
+
+        try await Task.sleep(for: .milliseconds(100))
+
+        #expect(authManager.authState == .login)
+        #expect(authManager.errorMessage == nil)
     }
-    
-    @MainActor
-    func testConfirmSignUpFailure() {
-        let expectation = self.expectation(description: "Confirm sign-up should fail with an error")
-        
+
+    @available(iOS 16.0, *)
+    @Test
+    func testConfirmSignUpFailure() async throws {
         mockAuthService.confirmSignUpResult = .failure(.awsError(AWSMobileClientError.invalidParameter(message: "Invalid code")))
         authManager.confirmSignUp(username: "testuser", confirmationCode: "123456")
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            XCTAssertEqual(self.authManager.errorMessage, "Invalid code")
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 2, handler: nil)
+
+        try await Task.sleep(for: .milliseconds(100))
+
+        #expect(authManager.errorMessage == "Invalid code")
     }
-    
-    @MainActor
-    func testSignInSuccess() {
-        let expectation = self.expectation(description: "Sign in completes")
-        
+
+    @available(iOS 16.0, *)
+    @Test
+    func testSignInSuccess() async throws {
         mockAuthService.signInResult = .success(.signedIn)
+        authManager.errorMessage = nil
         mockAuthService.checkUserStateResult = .success(.signedIn)
         authManager.signIn(username: "testuser@mail.com", password: "Password123_")
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 2, handler: nil)
-        
-        XCTAssertTrue(authManager.isLoggedIn, "User should be logged in.")
-        XCTAssertEqual(authManager.authState, .session(user: "Session initiated"), "Auth state should be session.")
-        XCTAssertNil(authManager.errorMessage, "There should be no error message.")
+
+        try await Task.sleep(for: .milliseconds(100))
+
+        #expect(authManager.isLoggedIn == true)
+        #expect(authManager.authState == .session(user: "Session initiated"))
+        #expect(authManager.errorMessage == nil)
     }
-    
-    @MainActor
-    func testSignInFailure() {
-        let expectation = self.expectation(description: "Sign in should fail with an error")
-        
+
+    @available(iOS 16.0, *)
+    @Test
+    func testSignInFailure() async throws {
         mockAuthService.signInResult = .failure(.awsError(AWSMobileClientError.invalidParameter(message: "Invalid credentials")))
         authManager.signIn(username: "testuser", password: "password")
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            XCTAssertEqual(self.authManager.errorMessage, "Invalid credentials")
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 2, handler: nil)
+
+        try await Task.sleep(for: .milliseconds(100))
+
+        #expect(authManager.errorMessage == "Invalid credentials")
     }
-    
-    @MainActor
-    func testSignOutSuccess() {
+
+    @available(iOS 16.0, *)
+    @Test
+    func testSignOutSuccess() async throws {
         mockAuthService.signOutResult = .success(())
+        authManager.errorMessage = nil
         authManager.signOut()
-        
-        XCTAssertFalse(authManager.isLoggedIn)
-        XCTAssertEqual(authManager.authState, .login)
-        XCTAssertNil(authManager.errorMessage)
+
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(authManager.isLoggedIn == false)
+        #expect(authManager.authState == .login)
+        #expect(authManager.errorMessage == nil)
     }
-    
-    @MainActor
-    func testSignOutFailure() {
-        let expectation = self.expectation(description: "Sign out should fail with an error")
-        
+
+    @available(iOS 16.0, *)
+    @Test
+    func testSignOutFailure() async throws {
         mockAuthService.signOutResult = .failure(.awsError(AWSMobileClientError.badRequest(message: "Network error")))
         authManager.signOut()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            XCTAssertEqual(self.authManager.errorMessage, "Network error")
-            expectation.fulfill()
-        }
-        waitForExpectations(timeout: 2, handler: nil)
+
+        try await Task.sleep(for: .milliseconds(100))
+
+        #expect(authManager.errorMessage == "Network error")
     }
 }

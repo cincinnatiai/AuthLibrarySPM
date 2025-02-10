@@ -58,10 +58,14 @@ open class AuthManager: ObservableObject {
             switch result {
             case .success(let signUpResult):
                 if signUpResult != .confirmed {
-                    self?.authState = .confirmCode(username: username)
+                    DispatchQueue.main.async {
+                        self?.authState = .confirmCode(username: username)
+                    }
                 }
             case .failure(let error):
-                self?.handleError(error)
+                DispatchQueue.main.async {
+                    self?.handleError(error)
+                }
             }
         }
     }

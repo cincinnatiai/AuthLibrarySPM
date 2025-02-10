@@ -45,10 +45,14 @@ open class AuthManager: ObservableObject {
             guard let self = self else { return }
             switch result {
             case .success(let userState):
-                self.isLoggedIn = (userState == .signedIn)
-                self.authState = self.isLoggedIn == true ? .session(user: "Session initiated") : .login
+                DispatchQueue.main.async {
+                    self.isLoggedIn = (userState == .signedIn)
+                    self.authState = self.isLoggedIn == true ? .session(user: "Session initiated") : .login
+                }
             case .failure(let error):
-                self.handleError(error)
+                DispatchQueue.main.async {
+                    self.handleError(error)
+                }
             }
         }
     }
@@ -74,9 +78,13 @@ open class AuthManager: ObservableObject {
         authService.confirmSignUp(username: username, confirmationCode: confirmationCode) { [weak self] result in
             switch result {
             case .success:
-                self?.showLogin()
+                DispatchQueue.main.async {
+                    self?.showLogin()
+                }
             case .failure(let error):
-                self?.handleError(error)
+                DispatchQueue.main.async {
+                    self?.handleError(error)
+                }
             }
         }
     }
@@ -84,10 +92,14 @@ open class AuthManager: ObservableObject {
     open func signIn(username: String, password: String) {
         authService.signIn(username: username, password: password) { [weak self] result in
             if case .success(let signInResult) = result, signInResult == .signedIn {
-                self?.isLoggedIn = true
-                self?.checkUserState()
+                DispatchQueue.main.async {
+                    self?.isLoggedIn = true
+                    self?.checkUserState()
+                }
             } else if case .failure(let error) = result {
-                self?.handleError(error)
+                DispatchQueue.main.async {
+                    self?.handleError(error)
+                }
             }
         }
     }
@@ -108,9 +120,13 @@ open class AuthManager: ObservableObject {
     open func handleError(_ error: AuthError) {
         switch error {
         case .awsError(let awsError):
-            self.errorMessage = awsError.stringMessage
+            DispatchQueue.main.async {
+                self.errorMessage = awsError.stringMessage
+            }
         case .unknown:
-            self.errorMessage = "An unknown error occurred."
+            DispatchQueue.main.async {
+                self.errorMessage = "An unknown error occurred."
+            }
         }
     }
     

@@ -108,9 +108,11 @@ open class AuthManager: ObservableObject {
         authService.signOut { [weak self] result in
             switch result {
             case .success:
-                self?.isLoggedIn = false
-                self?.checkUserState()
-                self?.errorMessage = nil
+                DispatchQueue.main.async {
+                    self?.isLoggedIn = false
+                    self?.checkUserState()
+                    self?.errorMessage = nil
+                }
             case .failure(let error):
                 self?.handleError(error)
             }

@@ -12,17 +12,17 @@ import AWSMobileClientXCF
 
 class MockAuthService: AuthServiceProtocol {
     var signUpResult: Result<SignUpConfirmationState, AuthError>?
-    var confirmSignUpResult: Result<Void, AuthError>?
+    var confirmSignUpResult: Result<Void, AuthError>? = .success(())
     var signInResult: Result<SignInState, AuthError>?
-    var signOutResult: Result<Void, AuthError>?
+    var signOutResult: Result<Void, AuthError>? = .success(())
     var checkUserStateResult: Result<UserState, AuthError>?
 
     func signUp(username: String, password: String, attributes: [String : String], completion: @escaping (Result<SignUpConfirmationState, AuthError>) -> Void) {
-        completion(signUpResult ?? .failure(.unknown))
+        completion(signUpResult ?? .success(.unconfirmed))
     }
 
     func confirmSignUp(username: String, confirmationCode: String, completion: @escaping (Result<Void, AuthError>) -> Void) {
-        completion(confirmSignUpResult ?? .failure(.unknown))
+        completion(confirmSignUpResult ?? .success(()))
     }
 
     func signIn(username: String, password: String, completion: @escaping (Result<SignInState, AuthError>) -> Void) {
@@ -30,10 +30,10 @@ class MockAuthService: AuthServiceProtocol {
     }
 
     func signOut(completion: @escaping (Result<Void, AuthError>) -> Void) {
-        completion(signOutResult ?? .failure(.unknown))
+        completion(signOutResult ?? .success(()))
     }
 
     func checkUserState(completion: @escaping (Result<UserState, AuthError>) -> Void) {
-        completion(checkUserStateResult ?? .failure(.unknown))
+        completion(checkUserStateResult ?? .success(.signedOut))
     }
 }

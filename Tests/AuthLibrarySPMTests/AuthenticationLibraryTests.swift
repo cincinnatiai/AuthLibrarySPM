@@ -29,8 +29,6 @@ struct AuthenticationLibraryTests {
     @available(iOS 16.0, *)
     @Test
     func testCheckUserStateLoggedIn() async throws {
-        authManager.errorMessage = nil
-
         mockAuthService.checkUserStateResult = .success(.signedIn)
         authManager.checkUserState()
 
@@ -44,8 +42,7 @@ struct AuthenticationLibraryTests {
     @available(iOS 16.0, *)
     @Test
     func testCheckUserStateLoggedOut() async throws {
-        authManager.errorMessage = nil
-        
+
         mockAuthService.checkUserStateResult = .success(.signedOut)
         authManager.checkUserState()
 
@@ -61,11 +58,10 @@ struct AuthenticationLibraryTests {
     func testSignUpSuccess() async throws {
         let attributes = ["email": "testuser@mail.com", "name": "testuser@mail.com"]
         mockAuthService.signUpResult = .success(.unconfirmed)
-        authManager.errorMessage = nil
         authManager.signUp(username: "testuser@mail.com", password: "Password1234_", attributes: attributes)
 
         try await Task.sleep(for: .milliseconds(100))
- 
+
         #expect(authManager.authState == .confirmCode(username: "testuser@mail.com"))
         #expect(authManager.errorMessage == nil)
     }
@@ -85,7 +81,6 @@ struct AuthenticationLibraryTests {
     @Test
     func testConfirmSignUpSuccess() async throws {
         mockAuthService.confirmSignUpResult = .success(())
-        authManager.errorMessage = nil
         authManager.confirmSignUp(username: "testuser", confirmationCode: "123456")
 
         try await Task.sleep(for: .milliseconds(100))
@@ -109,7 +104,6 @@ struct AuthenticationLibraryTests {
     @Test
     func testSignInSuccess() async throws {
         mockAuthService.signInResult = .success(.signedIn)
-        authManager.errorMessage = nil
         mockAuthService.checkUserStateResult = .success(.signedIn)
         authManager.signIn(username: "testuser@mail.com", password: "Password123_")
 
@@ -135,10 +129,10 @@ struct AuthenticationLibraryTests {
     @Test
     func testSignOutSuccess() async throws {
         mockAuthService.signOutResult = .success(())
-        authManager.errorMessage = nil
         authManager.signOut()
 
         try await Task.sleep(for: .milliseconds(100))
+
         #expect(authManager.isLoggedIn == false)
         #expect(authManager.authState == .login)
         #expect(authManager.errorMessage == nil)

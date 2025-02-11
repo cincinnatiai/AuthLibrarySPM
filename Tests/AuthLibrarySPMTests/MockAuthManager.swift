@@ -23,6 +23,7 @@ class MockAuthManager: AuthManager {
         signInCalled = true
         if username == "example@mail.com" && password == "password123_" {
             self.authState = .session(user: username)
+            self.errorMessage = nil
         } else {
             self.authState = .login
             self.errorMessage = "Invalid credentials"
@@ -33,6 +34,7 @@ class MockAuthManager: AuthManager {
         showSignUpCalled = true
         if username == "newuser@example.com" {
             self.authState = .confirmCode(username: username)
+            self.errorMessage = nil
         } else {
             self.errorMessage = "User already exists"
         }
@@ -42,6 +44,7 @@ class MockAuthManager: AuthManager {
         confirmSignUpCalled = true
         if confirmationCode == "123456" {
             self.authState = .session(user: username)
+            self.errorMessage = nil
         } else {
             self.authState = .confirmCode(username: username)
             self.errorMessage = "Invalid confirmation code"

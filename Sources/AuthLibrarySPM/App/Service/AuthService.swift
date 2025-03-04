@@ -49,7 +49,7 @@ public class AuthService: AuthServiceProtocol {
     public func checkUserState(completion: @escaping (Result<UserState, AuthError>) -> Void) {
         completion(.success(AWSMobileClient.default().currentUserState))
     }
-    /// Function that will get the Token from
+
     public func getIdToken(completion: @escaping (Result<String, AuthError>) -> Void) {
         AWSMobileClient.default().getTokens { tokens, error in
             if let error = error as? AWSMobileClientError {

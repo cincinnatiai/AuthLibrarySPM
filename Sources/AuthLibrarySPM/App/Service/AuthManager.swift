@@ -17,6 +17,8 @@ open class AuthManager: ObservableObject {
     @Published public var errorMessage: String? = nil
 
     private let authService: AuthServiceProtocol
+    private var tokenProtocol: TokenProtocol?
+
     public init(authService: AuthServiceProtocol = AuthService()) {
         self.authService = authService
         checkUserState()
@@ -91,24 +93,15 @@ open class AuthManager: ObservableObject {
 
     open func signIn(username: String, password: String) {
         authService.signIn(username: username, password: password) { [weak self] result in
-//            DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.async { [weak self] in
                 if case .success(let signInResult) = result, signInResult == .signedIn {
                     self?.isLoggedIn = true
                     self?.checkUserState()
-
-                    self?.authService.getIdToken(completion: { tokenResult in
-                        switch tokenResult {
-                        case .success(let token):
-                            //Function to store tokens
-                            print("Token: \(token)")
-                        case .failure(let error):
-                            self?.handleError(error)
-                        }
-                    })
+                    self?.manageToken()
                 } else if case .failure(let error) = result {
                     self?.handleError(error)
                 }
-//            }
+            }
         }
     }
 
@@ -151,6 +144,27 @@ open class AuthManager: ObservableObject {
         }
     }
 }
+
+@available(iOS 13.0, *)
+extension AuthManager {
+    private func manageToken() {
+        self.authService.getIdToken(completion: { [weak self] tokenResult in
+            guard let self else { return }
+            switch tokenResult {
+            case .success(let token):
+                guard let tokenProtocol else { return }
+                tokenProtocol.manageToken(idToken: token)
+            case .failure(let error):
+                self.handleError(error)
+            }
+        })
+    }
+
+    public func setTokenProtocol(_ tokenProtocol: TokenProtocol) {
+        self.tokenProtocol = tokenProtocol
+    }
+}
+
 
 public enum AuthState: Equatable {
     case signUp

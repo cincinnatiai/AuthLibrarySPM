@@ -12,9 +12,10 @@ final public class KeychainManager {
     public let keychain: KeychainSwift
     
     public init() {
-        let keychain = KeychainSwift()
+//        let keychain = KeychainSwift()
+        self.keychain = KeychainSwift()
         keychain.synchronizable = true
-        self.keychain = keychain
+//        self.keychain = keychain
     }
     
     public func set(_ value: String, key: String) {

@@ -24,6 +24,7 @@ public class LoginViewModel: AuthViewModel {
     public func login() {
         authManager.signIn(username: email, password: password)
         handleActionResult()
+        keychain.set(email, key: "email")
     }
 
     public func signUp() {

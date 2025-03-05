@@ -1,8 +1,8 @@
 //
-//  File.swift
+//  TokenProtocol.swift
 //  AuthLibrarySPM
 //
-//  Created by GenericDevCalifornia on 3/4/25.
+//  Created by Dionicio Cruz Velázquez on 3/5/25.
 //
 
 import Foundation

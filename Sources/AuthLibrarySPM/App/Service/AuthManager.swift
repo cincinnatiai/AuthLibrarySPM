@@ -12,6 +12,9 @@ import SwiftUI
 @available(iOS 13.0, *)
 @MainActor
 open class AuthManager: ObservableObject {
+
+    public static let shared = AuthManager()
+
     @Published public var authState: AuthState = .login
     @Published public var isLoggedIn: Bool = false
     @Published public var errorMessage: String? = nil
@@ -44,7 +47,6 @@ open class AuthManager: ObservableObject {
 
     open func checkUserState() {
         authService.checkUserState { [weak self] result in
-            //            Task { @MainActor in
             switch result {
             case .success(let userState):
                 DispatchQueue.main.async {
@@ -58,7 +60,6 @@ open class AuthManager: ObservableObject {
             case .failure(let error):
                 self?.handleError(error)
             }
-            //            }
         }
     }
 
@@ -186,7 +187,6 @@ extension AuthManager {
         self.tokenProtocol = tokenProtocol
     }
 }
-
 
 public enum AuthState: Equatable {
     case signUp

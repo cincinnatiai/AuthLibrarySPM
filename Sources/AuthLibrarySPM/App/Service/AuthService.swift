@@ -50,7 +50,7 @@ public class AuthService: AuthServiceProtocol {
         completion(.success(AWSMobileClient.default().currentUserState))
     }
 
-    public func getIdToken(completion: @escaping (Result<String, AuthError>) -> Void) {
+    public func getTokenId(completion: @escaping (Result<String, AuthError>) -> Void) {
         AWSMobileClient.default().getTokens { tokens, error in
             if let error = error as? AWSMobileClientError {
                 completion(.failure(.awsError(error)))

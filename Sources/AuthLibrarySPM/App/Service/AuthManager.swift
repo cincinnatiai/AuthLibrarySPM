@@ -153,7 +153,8 @@ extension AuthManager {
             switch tokenResult {
             case .success(let token):
                 guard let tokenProtocol else { return }
-                tokenProtocol.manageToken(idToken: token)
+
+                tokenProtocol.manageTokenId(idToken: token)
             case .failure(let error):
                 self.handleError(error)
             }

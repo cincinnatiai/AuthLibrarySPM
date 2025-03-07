@@ -14,10 +14,12 @@ import AWSMobileClientXCF
 struct AuthManagerTests {
     var authManager: AuthManager
     var mockAuthService: MockAuthService
+    var mockTokenHandler: MockTokenHandler
 
     init() {
         self.mockAuthService = MockAuthService()
         self.authManager = AuthManager(authService: mockAuthService)
+        self.mockTokenHandler = MockTokenHandler()
     }
 
     @Test
@@ -150,5 +152,29 @@ struct AuthManagerTests {
         try await Task.sleep(for: .milliseconds(200))
         
         #expect(authManager.errorMessage == awsError.stringMessage)
+    }
+
+    @available(iOS 16.0, *)
+    @Test
+    func testManageToken_Success() async throws {
+        let expectedToken = "expectedToken"
+        mockAuthService.signInResult = .success(.signedIn)
+        mockAuthService.getTokenResult = .success(expectedToken)
+        authManager.setTokenProtocol(mockTokenHandler)
+        authManager.signIn(username: "test", password: "test")
+        try await Task.sleep(for: .milliseconds(200))
+        #expect(mockTokenHandler.token == expectedToken)
+    }
+
+    @available(iOS 16.0, *)
+    @Test
+    func testManageToken_Failure() async throws {
+        mockAuthService.signInResult = .success(.signedIn)
+        mockAuthService.getTokenResult = .failure(.unknown)
+        authManager.setTokenProtocol(mockTokenHandler)
+        authManager.signIn(username: "Test", password: "Test")
+        try await Task.sleep(for: .milliseconds(200))
+        #expect(mockTokenHandler.token == nil)
+
     }
 }

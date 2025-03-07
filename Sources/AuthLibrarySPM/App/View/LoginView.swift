@@ -16,36 +16,37 @@ public struct LoginView: View {
     }
 
     public var body: some View {
-        VStack {
-            Spacer()
-            TextField("Email", text: $viewModel.email)
-                .textFieldStyle()
-                .keyboardType(.emailAddress)
+          VStack {
+              Spacer()
+              TextField("Email", text: $viewModel.email)
+                  .textFieldStyle()
+                  .keyboardType(.emailAddress)
 
-            TextField("Password", text: $viewModel.password)
-                .secureFieldStyle()
+              TextField("Password", text: $viewModel.password)
+                  .secureFieldStyle()
 
-            Button("Login", action: {
-                viewModel.login()
-            })
-            .buttonStyle()
+              Button("Login", action: {
+                  viewModel.login()
+              })
+              .buttonStyle()
 
-            viewModel.authManager.errorTextView
+              viewModel.authManager.errorTextView
 
-            Spacer()
+              Spacer()
 
-            Button("Don't have an account? Sign up.", action: {
-                viewModel.signUp()
-            })
-            .padding(.top, 20)
-        }
-        .padding()
-        .padding(.horizontal, 15)
-        .onAppear {
-            viewModel.clearErrorMessage()
-        }
-    }
-}
+              Button("Don't have an account? Sign up.", action: {
+                  viewModel.signUp()
+              })
+              .padding(.top, 20)
+          }
+          .padding()
+          .padding(.horizontal, 15)
+          .onAppear {
+              viewModel.clearErrorMessage()
+          }
+      }
+  }
+
 
 @available(iOS 14.0, *)
 #Preview {

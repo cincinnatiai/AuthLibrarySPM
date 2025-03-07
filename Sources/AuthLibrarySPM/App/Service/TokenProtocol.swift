@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol TokenProtocol: AnyObject {
-    func manageToken(idToken: String)
+    func manageIdToken(idToken: String)
 }

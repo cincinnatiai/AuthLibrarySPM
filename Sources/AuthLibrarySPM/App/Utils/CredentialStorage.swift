@@ -12,9 +12,8 @@ final public class KeychainManager {
     public let keychain: KeychainSwift
     
     public init() {
-        let keychain = KeychainSwift()
+        self.keychain = KeychainSwift()
         keychain.synchronizable = true
-        self.keychain = keychain
     }
     
     public func set(_ value: String, key: String) {

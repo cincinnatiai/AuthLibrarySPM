@@ -14,4 +14,5 @@ public protocol AuthServiceProtocol {
     func signIn(username: String, password: String, completion: @escaping (Result<SignInState, AuthError>) -> Void)
     func signOut(completion: @escaping (Result<Void, AuthError>) -> Void)
     func checkUserState(completion: @escaping (Result<UserState, AuthError>) -> Void)
+    func getIdToken(completion: @escaping (Result<String, AuthError>) -> Void)
 }

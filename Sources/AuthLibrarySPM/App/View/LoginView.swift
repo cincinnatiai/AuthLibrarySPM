@@ -36,7 +36,7 @@ public struct LoginView: View {
                     isPasswordVisible.toggle()
                 }) {
                     Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                        .foregroundColor(.black)
+                        .foregroundColor(.gray)
                 }
                 .padding()
                 .buttonStyle(PlainButtonStyle())

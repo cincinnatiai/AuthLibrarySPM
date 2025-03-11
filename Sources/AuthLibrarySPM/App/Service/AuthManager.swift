@@ -35,9 +35,9 @@ open class AuthManager: ObservableObject {
     open func initializeAWS() {
         AWSMobileClient.default().initialize { (userState, error) in
             if let error = error {
-                error.localizedDescription
+                print("Error initializing AWSMobileClient: \(error.localizedDescription)")
             } else if let userState = userState {
-                userState.rawValue
+                print("AWSMobileClient initialized with state: \(userState.rawValue)")
             }
         }
     }
@@ -153,7 +153,7 @@ extension AuthManager {
             switch tokenResult {
             case .success(let token):
                 guard let tokenProtocol else { return }
-                tokenProtocol.manageIdToken(idToken: token)
+                tokenProtocol.manageToken(idToken: token)
             case .failure(let error):
                 self.handleError(error)
             }

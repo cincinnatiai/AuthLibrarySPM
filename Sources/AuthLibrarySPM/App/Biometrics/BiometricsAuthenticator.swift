@@ -32,7 +32,6 @@ class FaceIDAuthenticator {
             }
         }
     }
-    
 }
 
 enum FaceIdError: Error {

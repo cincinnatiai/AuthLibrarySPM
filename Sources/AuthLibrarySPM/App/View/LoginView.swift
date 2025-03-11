@@ -26,7 +26,7 @@ public struct LoginView: View {
                 .secureFieldStyle()
 
             Button("Login", action: {
-                    viewModel.login()
+                viewModel.login()
             })
             .buttonStyle()
 

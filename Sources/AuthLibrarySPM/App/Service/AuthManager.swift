@@ -43,7 +43,7 @@ open class AuthManager: ObservableObject {
             }
         }
     }
-    
+
     open func checkUserState() {
         authService.checkUserState { [weak self] result in
             switch result {
@@ -129,11 +129,11 @@ open class AuthManager: ObservableObject {
             }
         }
     }
-    
+
     open func clearErrorMessage() {
         self.errorMessage = nil
     }
-    
+
     open var errorTextView: some View {
         if let errorMessage = errorMessage {
             return AnyView(Text(errorMessage)

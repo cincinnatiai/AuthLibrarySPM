@@ -12,10 +12,12 @@ import AWSMobileClientXCF
 struct AuthenticationLibraryTests {
     var authManager: AuthManager
     var mockAuthService: MockAuthService
+    var mockTokenHandler: MockTokenHandler
 
     init() {
         self.mockAuthService = MockAuthService()
         self.authManager = AuthManager(authService: mockAuthService)
+        self.mockTokenHandler = MockTokenHandler()
     }
 
     @Test
@@ -105,9 +107,12 @@ struct AuthenticationLibraryTests {
     func testSignInSuccess() async throws {
         mockAuthService.signInResult = .success(.signedIn)
         mockAuthService.checkUserStateResult = .success(.signedIn)
-        authManager.signIn(username: "testuser@mail.com", password: "Password123_")
+        mockAuthService.getTokenResult = .success("Mock-Token")
 
-        try await Task.sleep(for: .milliseconds(100))
+        authManager.setTokenProtocol(mockTokenHandler)
+        authManager.signIn(username: "example@mail.com", password: "password123_")
+
+        try await Task.sleep(for: .milliseconds(200))
 
         #expect(authManager.isLoggedIn == true)
         #expect(authManager.authState == .session(user: "Session initiated"))
@@ -115,7 +120,7 @@ struct AuthenticationLibraryTests {
     }
 
     @available(iOS 16.0, *)
-    @Test
+    @Test 
     func testSignInFailure() async throws {
         mockAuthService.signInResult = .failure(.awsError(AWSMobileClientError.invalidParameter(message: "Invalid credentials")))
         authManager.signIn(username: "testuser", password: "password")

@@ -8,7 +8,12 @@
 import Foundation
 import KeychainSwift
 
-final public class KeychainManager {
+public protocol KeychainProtocol {
+    func set(_ value: String, key: String)
+    func get(key: String) -> String?
+}
+
+final public class KeychainManager: KeychainProtocol {
     public let keychain: KeychainSwift
     
     public init() {

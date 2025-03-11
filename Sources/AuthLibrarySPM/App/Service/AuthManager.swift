@@ -94,6 +94,7 @@ open class AuthManager: ObservableObject {
     open func signIn(username: String, password: String) {
         authService.signIn(username: username, password: password) { [weak self] result in
             DispatchQueue.main.async { [weak self] in
+                print("SignIn Result: \(result)")
                 if case .success(let signInResult) = result, signInResult == .signedIn {
                     self?.isLoggedIn = true
                     self?.checkUserState()

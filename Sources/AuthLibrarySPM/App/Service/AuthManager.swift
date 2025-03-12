@@ -124,7 +124,29 @@ open class AuthManager: ObservableObject {
         DispatchQueue.main.async {
             switch error {
             case .awsError(let awsError):
-                self.errorMessage = awsError.stringMessage
+                switch awsError {
+                case .invalidPassword(_),
+                     .limitExceeded(_),
+                     .mfaMethodNotFound(_),
+                     .notAuthorized(_),
+                     .passwordResetRequired(_),
+                     .userNotConfirmed(_),
+                     .userNotFound(_),
+                     .usernameExists(_),
+                     .notSignedIn(_),
+                     .tooManyFailedAttempts(_),
+                     .tooManyRequests(_),
+                     .unableToSignIn(_),
+                     .aliasExists(_),
+                     .expiredCode(_),
+                     .invalidState(_),
+                     .badRequest(_),
+                     .unknown(_),
+                     .invalidParameter(_):
+                    self.errorMessage = awsError.message
+                default:
+                    self.errorMessage = "An unknown error occurred."
+                }
             case .unknown:
                 self.errorMessage = "An unknown error occurred."
             }

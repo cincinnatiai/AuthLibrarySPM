@@ -14,7 +14,7 @@ public struct AuthApp<SessionViewType: View>: View {
         VStack {
             switch authManager.authState {
             case .login:
-                LoginView(viewModel: LoginViewModel(authManager: AuthManager()))
+                LoginView(viewModel: LoginViewModel(authManager: authManager))
             case .signUp:
                 SignUpView(viewModel: SignUpViewModel(authManager: authManager))
             case .confirmCode(let username):

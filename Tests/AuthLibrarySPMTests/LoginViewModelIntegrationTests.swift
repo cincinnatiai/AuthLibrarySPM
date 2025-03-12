@@ -15,9 +15,11 @@ import AWSMobileClientXCF
 struct LoginViewModelIntegrationTests {
     
     var authManager: AuthManager
-    var keychain: KeychainManager
+    var keychain: KeychainProtocol
     var viewModel: LoginViewModel
-    
+    var mockTokenHandler: MockTokenHandler
+    var mockAuthService: MockAuthService
+
     init() async {
         guard let configURL = Bundle.module.url(forResource: "awsconfiguration", withExtension: "json"),
               let data = try? Data(contentsOf: configURL),
@@ -35,50 +37,54 @@ struct LoginViewModelIntegrationTests {
         self.authManager.isLoggedIn = false
         self.authManager.authState = .login
         self.authManager.errorMessage = nil
+        self.mockTokenHandler = MockTokenHandler()
+        self.mockAuthService = MockAuthService()
+        self.keychain = MockKeychainValues()
 
-        self.keychain = KeychainManager()
         self.viewModel = LoginViewModel(authManager: authManager, keychain: keychain)
     }
-    
-//    @available(iOS 16.0, *)
+
+    @available(iOS 16.0, *)
     @Test
     func testSuccessfulLogin() async throws {
-        await withCheckedContinuation { continuation in
-            AWSMobileClient.default().initialize { _, _ in continuation.resume() }
-        }
-        
-        guard AWSMobileClient.default().currentUserState == .signedOut else { return }
-        
+
         // Given (Provide an actual mail and password)
-        viewModel.email = "dioniciocruzvelazquez@gmail.com"//"ABC@mail.com"
-        viewModel.password = "Airbag1990_"//"ABC123_"
-        
+        viewModel.email = "your-email@email.com"
+        viewModel.password = "yourPassw0rd"
+        mockAuthService.getTokenResult = .success("Mock-Token")
+        authManager.setTokenProtocol(mockTokenHandler)
+
         await withCheckedContinuation { continuation in
             authManager.signIn(username: viewModel.email, password: viewModel.password)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5) { continuation.resume() }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                authManager.checkUserState()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    continuation.resume()
+                }
+            }
         }
-        
-        #expect(authManager.authState == .session(user: "Session initiated"))
+
         #expect(authManager.isLoggedIn == true)
+        #expect(authManager.authState == .session(user: "Session initiated"))
         #expect(authManager.errorMessage == nil)
     }
-    
+
     @available(iOS 16.0, *)
     @Test
     func testFailedLogin() async throws {
-        authManager.signOut()
-        try await Task.sleep(for: .milliseconds(100))
-        
-        // Given
+
         viewModel.email = "wrong@example.com"
         viewModel.password = "wrong_password"
-        
-        authManager.signIn(username: viewModel.email, password: viewModel.password)
-        try await Task.sleep(for: .milliseconds(100))
-        
+
+        await withCheckedContinuation { continuation in
+            authManager.signIn(username: viewModel.email, password: viewModel.password)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { continuation .resume() }
+        }
+
         #expect(authManager.errorMessage == "Incorrect username or password.")
     }
-    
+
     @available(iOS 16.0, *)
     @Test
     func testSignUpNavigation() {
@@ -90,10 +96,11 @@ struct LoginViewModelIntegrationTests {
     @available(iOS 16.0, *)
     @Test
     func testLoadCredentials() {
+
         keychain.set("saved@example.com", key: "email")
-        
+
         viewModel.loadCredentials()
-        
+
         #expect(viewModel.email == "saved@example.com")
     }
     

@@ -23,9 +23,9 @@ public class LoginViewModel: AuthViewModel {
     }
 
     private let faceIDAuthenticator = FaceIDAuthenticator()
-    private let keychain: KeychainManager
+    private let keychain: KeychainProtocol
 
-    public init(authManager: AuthManager, keychain: KeychainManager = KeychainManager()) {
+    public init(authManager: AuthManager, keychain: KeychainProtocol = KeychainManager()) {
         self.keychain = keychain
         self.isFaceIDEnabled = UserDefaults.standard.bool(forKey: "isFaceIDEnabled")
         super.init(authManager: authManager)

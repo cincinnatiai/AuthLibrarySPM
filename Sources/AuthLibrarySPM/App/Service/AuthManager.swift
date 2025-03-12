@@ -20,6 +20,7 @@ open class AuthManager: ObservableObject {
     @Published public var errorMessage: String? = nil
 
     private let authService: AuthServiceProtocol
+    private var tokenProtocol: TokenManagerProtocol?
 
     public init(authService: AuthServiceProtocol = AuthService()) {
         self.authService = authService
@@ -93,10 +94,11 @@ open class AuthManager: ObservableObject {
 
     open func signIn(username: String, password: String) {
         authService.signIn(username: username, password: password) { [weak self] result in
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
                 if case .success(let signInResult) = result, signInResult == .signedIn {
                     self?.isLoggedIn = true
                     self?.checkUserState()
+                    self?.manageToken()
                 } else if case .failure(let error) = result {
                     self?.handleError(error)
                 }
@@ -145,6 +147,25 @@ open class AuthManager: ObservableObject {
 }
 
 @available(iOS 13.0, *)
+extension AuthManager {
+    private func manageToken() {
+        self.authService.getTokenId(completion: { [weak self] tokenResult in
+            guard let self else { return }
+            switch tokenResult {
+            case .success(let token):
+                guard let tokenProtocol else { return }
+                tokenProtocol.manageTokenId(idToken: token)
+            case .failure(let error):
+                self.handleError(error)
+            }
+        })
+    }
+
+    public func setTokenProtocol(_ tokenProtocol: TokenManagerProtocol) {
+        self.tokenProtocol = tokenProtocol
+    }
+}
+
 public enum AuthState: Equatable {
     case signUp
     case login

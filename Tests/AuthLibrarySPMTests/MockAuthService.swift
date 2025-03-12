@@ -11,11 +11,13 @@ import Testing
 import AWSMobileClientXCF
 
 class MockAuthService: AuthServiceProtocol {
+
     var signUpResult: Result<SignUpConfirmationState, AuthError>?
     var confirmSignUpResult: Result<Void, AuthError>? = .success(())
     var signInResult: Result<SignInState, AuthError>?
     var signOutResult: Result<Void, AuthError>? = .success(())
     var checkUserStateResult: Result<UserState, AuthError>?
+    var getTokenResult: Result<String,AuthError>?
 
     func signUp(username: String, password: String, attributes: [String : String], completion: @escaping (Result<SignUpConfirmationState, AuthError>) -> Void) {
         completion(signUpResult ?? .success(.unconfirmed))
@@ -35,5 +37,9 @@ class MockAuthService: AuthServiceProtocol {
 
     func checkUserState(completion: @escaping (Result<UserState, AuthError>) -> Void) {
         completion(checkUserStateResult ?? .success(.signedOut))
+    }
+
+    func getTokenId(completion: @escaping (Result<String, AuthLibrarySPM.AuthError>) -> Void) {
+        completion (getTokenResult ?? .failure(.unknown))
     }
 }

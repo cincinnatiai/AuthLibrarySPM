@@ -12,10 +12,12 @@ import AWSMobileClientXCF
 struct AuthenticationLibraryTests {
     var authManager: AuthManager
     var mockAuthService: MockAuthService
+    var mockTokenHandler: MockTokenHandler
 
     init() {
         self.mockAuthService = MockAuthService()
         self.authManager = AuthManager(authService: mockAuthService)
+        self.mockTokenHandler = MockTokenHandler()
     }
 
     @Test
@@ -105,7 +107,9 @@ struct AuthenticationLibraryTests {
     func testSignInSuccess() async throws {
         mockAuthService.signInResult = .success(.signedIn)
         mockAuthService.checkUserStateResult = .success(.signedIn)
-        authManager.signIn(username: "testuser@mail.com", password: "Password123_")
+        mockAuthService.getTokenResult = .success("Mock-Token")
+        authManager.setTokenProtocol(mockTokenHandler)
+        authManager.signIn(username: "testuser@mail.com", password: "password123_")
 
         try await Task.sleep(for: .milliseconds(100))
 

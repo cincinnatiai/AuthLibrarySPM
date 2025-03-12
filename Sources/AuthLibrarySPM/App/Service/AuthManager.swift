@@ -94,7 +94,6 @@ open class AuthManager: ObservableObject {
     open func signIn(username: String, password: String) {
         authService.signIn(username: username, password: password) { [weak self] result in
             DispatchQueue.main.async { [weak self] in
-                print("SignIn Result: \(result)")
                 if case .success(let signInResult) = result, signInResult == .signedIn {
                     self?.isLoggedIn = true
                     self?.checkUserState()
@@ -154,7 +153,6 @@ extension AuthManager {
             switch tokenResult {
             case .success(let token):
                 guard let tokenProtocol else { return }
-
                 tokenProtocol.manageTokenId(idToken: token)
             case .failure(let error):
                 self.handleError(error)

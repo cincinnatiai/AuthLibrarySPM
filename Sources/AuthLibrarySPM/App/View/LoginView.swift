@@ -23,8 +23,6 @@ public struct LoginView: View {
                 .textFieldStyle()
                 .keyboardType(.emailAddress)
 
-//            TextField("Password", text: $viewModel.password)
-//                .secureFieldStyle()
             ZStack(alignment:  .trailing) {
                 if isPasswordVisible  {
                     TextField("Password", text: $viewModel.password)

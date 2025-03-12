@@ -7,6 +7,6 @@
 
 import Foundation
 
-public protocol TokenProtocol: AnyObject {
-    func manageToken(idToken: String)
+public protocol TokenManagerProtocol: AnyObject {
+    func manageTokenId(idToken: String)
 }

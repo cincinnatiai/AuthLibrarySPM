@@ -17,7 +17,7 @@ open class AuthManager: ObservableObject {
     @Published public var errorMessage: String? = nil
 
     private let authService: AuthServiceProtocol
-    private var tokenProtocol: TokenProtocol?
+    private var tokenProtocol: TokenManagerProtocol?
 
     public init(authService: AuthServiceProtocol = AuthService()) {
         self.authService = authService
@@ -148,19 +148,19 @@ open class AuthManager: ObservableObject {
 @available(iOS 13.0, *)
 extension AuthManager {
     private func manageToken() {
-        self.authService.getIdToken(completion: { [weak self] tokenResult in
+        self.authService.getTokenId(completion: { [weak self] tokenResult in
             guard let self else { return }
             switch tokenResult {
             case .success(let token):
                 guard let tokenProtocol else { return }
-                tokenProtocol.manageToken(idToken: token)
+                tokenProtocol.manageTokenId(idToken: token)
             case .failure(let error):
                 self.handleError(error)
             }
         })
     }
 
-    public func setTokenProtocol(_ tokenProtocol: TokenProtocol) {
+    public func setTokenProtocol(_ tokenProtocol: TokenManagerProtocol) {
         self.tokenProtocol = tokenProtocol
     }
 }

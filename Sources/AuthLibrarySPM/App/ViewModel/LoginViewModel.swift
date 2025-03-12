@@ -13,9 +13,9 @@ public class LoginViewModel: AuthViewModel {
     @Published public var email: String = ""
     @Published public var password: String = ""
 
-    private let keychain: KeychainManager
+    private let keychain: KeychainProtocol
 
-    public init(authManager: AuthManager, keychain: KeychainManager = KeychainManager()) {
+    public init(authManager: AuthManager, keychain: KeychainProtocol = KeychainManager()) {
         self.keychain = keychain
         super.init(authManager: authManager)
         loadCredentials()

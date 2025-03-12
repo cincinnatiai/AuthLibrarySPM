@@ -10,59 +10,43 @@ import SwiftUI
 @available(iOS 14.0, *)
 public struct LoginView: View {
     @StateObject private var viewModel: LoginViewModel
-    @State private var isPasswordVisible: Bool = false
 
     init(viewModel: LoginViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
 
     public var body: some View {
-        VStack {
-            Spacer()
-            TextField("Email", text: $viewModel.email)
-                .textFieldStyle()
-                .keyboardType(.emailAddress)
-            ZStack(alignment:  .trailing) {
-                if isPasswordVisible  {
-                    TextField("Password", text: $viewModel.password)
-                        .secureFieldStyle()
-                        .autocapitalization(.none)
-                } else {
-                    SecureField("Password", text: $viewModel.password)
-                        .secureFieldStyle()
-                        .autocapitalization(.none)
-                }
-                Button(action:  {
-                    isPasswordVisible.toggle()
-                }) {
-                    Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                        .foregroundColor(.gray)
-                }
-                .padding()
-                .buttonStyle(PlainButtonStyle())
-            }
+          VStack {
+              Spacer()
+              TextField("Email", text: $viewModel.email)
+                  .textFieldStyle()
+                  .keyboardType(.emailAddress)
 
-            Button("Login", action: {
-                viewModel.login()
-            })
-            .buttonStyle()
+              TextField("Password", text: $viewModel.password)
+                  .secureFieldStyle()
 
-            viewModel.authManager.errorTextView
+              Button("Login", action: {
+                  viewModel.login()
+              })
+              .buttonStyle()
 
-            Spacer()
+              viewModel.authManager.errorTextView
 
-            Button("Don't have an account? Sign up.", action: {
-                viewModel.signUp()
-            })
-            .padding(.top, 20)
-        }
-        .padding()
-        .padding(.horizontal, 15)
-        .onAppear {
-            viewModel.clearErrorMessage()
-        }
-    }
-}
+              Spacer()
+
+              Button("Don't have an account? Sign up.", action: {
+                  viewModel.signUp()
+              })
+              .padding(.top, 20)
+          }
+          .padding()
+          .padding(.horizontal, 15)
+          .onAppear {
+              viewModel.clearErrorMessage()
+          }
+      }
+  }
+
 
 @available(iOS 14.0, *)
 #Preview {

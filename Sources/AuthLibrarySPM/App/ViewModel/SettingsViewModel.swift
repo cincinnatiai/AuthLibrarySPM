@@ -11,13 +11,16 @@ import SwiftUI
 @available(iOS 13.0, *)
 @MainActor
 public class SettingsViewModel: AuthViewModel {
+
+    var preferences: FaceIDPreferencesProtocol
     
-    public init() {
+    public init(preferences: FaceIDPreferencesProtocol = FaceIDPreferencesManager()) {
+        self.preferences = preferences
         super.init(authManager: AuthManager.shared)
     }
 
     public func signOut() {
         authManager.signOut()
-        UserDefaults.standard.set(true, forKey: "hasLoggedOut")
+        preferences.hasLoggedOut = true
     }
 }

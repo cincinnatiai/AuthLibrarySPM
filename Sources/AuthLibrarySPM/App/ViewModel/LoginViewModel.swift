@@ -12,70 +12,91 @@ import SwiftUI
 public class LoginViewModel: AuthViewModel {
     @Published public var email: String = ""
     @Published public var password: String = ""
-    @Published private var isFaceIDInProgress = false
     @Published public var authenticationError: String?
+    @Published private var isFaceIDInProgress = false
+    @Published public var isFaceIDEnabled: Bool { didSet { preferences.isFaceIDEnabled = isFaceIDEnabled } }
 
-    @Published public var isFaceIDEnabled: Bool {
-        didSet {
-            UserDefaults.standard.set(isFaceIDEnabled, forKey: "isFaceIDEnabled")
-            UserDefaults.standard.synchronize()
-        }
-    }
+    private let faceIDAuthenticator: FaceIDAuthenticator
+    private let keychain: KeychainProtocol
+    private var preferences: FaceIDPreferencesProtocol
 
-    private let faceIDAuthenticator = FaceIDAuthenticator()
-    private let keychain: KeychainManager
-
-    public init(authManager: AuthManager, keychain: KeychainManager = KeychainManager()) {
+    public init(
+        authManager: AuthManager,
+        keychain: KeychainProtocol = KeychainManager(),
+        preferences: FaceIDPreferencesProtocol = FaceIDPreferencesManager()
+    ) {
         self.keychain = keychain
-        self.isFaceIDEnabled = UserDefaults.standard.bool(forKey: "isFaceIDEnabled")
+        self.preferences = preferences
+        self.faceIDAuthenticator = FaceIDAuthenticator()
+        self.isFaceIDEnabled = preferences.isFaceIDEnabled
         super.init(authManager: authManager)
+
         loadCredentials()
-
-        Task {
-            let isAppRelaunch = UserDefaults.standard.bool(forKey: "isAppRelaunch")
-            
-            if isFaceIDEnabled && isAppRelaunch {
-                await tryAutoLogin()
-            }
-        }
-    }
-
-    private func tryAutoLogin() async {
-        guard shouldAttemptAutoLogin() else { return }
-        await attemptFaceIDLogin()
-    }
-
-    public func attemptFaceIDLogin() {
-        guard !isFaceIDInProgress else { return }
-        defer { isFaceIDInProgress = false }
-
-        Task {
-            do {
-                let success = try await faceIDAuthenticator.authenticate()
-                if success {
-                    if let storedEmail = keychain.get(key: "email"),
-                       let storedPassword = keychain.get(key: "password") {
-                        email = storedEmail
-                        password = storedPassword
-                        authManager.signIn(username: email, password: password)
-                    } else {
-                        authenticationError = "No saved credentials found."
-                    }
-                }
-            } catch {
-                authenticationError = error.localizedDescription
-            }
-            isFaceIDInProgress = false
-        }
     }
 
     public func login() {
-        if isFaceIDEnabled {
-            attemptFaceIDLogin()
-        } else {
-            authManager.signIn(username: email, password: password)
-            handleActionResult()
-            keychain.set(email, key: "email")
+        isFaceIDEnabled ? authenticateAndLogin() : manualLogin()
+    }
+
+    private func manualLogin() {
+        authManager.signIn(username: email, password: password)
+        handleActionResult()
+        keychain.set(email, key: "email")
+    }
+
+    func tryAutoLogin() async {
+        guard preferences.isAppRelaunch, isFaceIDEnabled else { return }
+        preferences.isAppRelaunch = false
+        await authenticateAndLogin()
+    }
+
+    private func authenticateAndLogin() {
+        guard !isFaceIDInProgress else { return }
+        isFaceIDInProgress = true
+
+        Task {
+            do {
+                guard try await faceIDAuthenticator.authenticate() else { return }
+                guard let credentials = fetchStoredCredentials() else {
+                    authenticationError = "No saved credentials found."
+                    return
+                }
+                login(with: credentials)
+            } catch {
+                authenticationError = error.localizedDescription
+            }
+        }
+    }
+
+    private func fetchStoredCredentials() -> (email: String, password: String)? {
+        guard let email = keychain.get(key: "email"),
+              let password = keychain.get(key: "password") else { return nil }
+        return (email, password)
+    }
+
+    private func login(with credentials: (email: String, password: String)) {
+        email = credentials.email
+        password = credentials.password
+        authManager.signIn(username: email, password: password)
+    }
+
+    public func toggleFaceID(_ enabled: Bool) async {
+        guard enabled else {
+            isFaceIDEnabled = false
+            return
+        }
+
+        do {
+            guard try await faceIDAuthenticator.authenticate() else {
+                isFaceIDEnabled = false
+                return
+            }
+            isFaceIDEnabled = true
+            preferences.hasLoggedOut = false
+            await tryAutoLogin()
+        } catch {
+            authenticationError = "Face ID permission denied"
+            isFaceIDEnabled = false
         }
     }
 
@@ -85,42 +106,5 @@ public class LoginViewModel: AuthViewModel {
 
     public func loadCredentials() {
         email = keychain.get(key: "email") ?? ""
-    }
-
-    override public func clearErrorMessage() {
-        super.clearErrorMessage()
-    }
-
-    private func shouldAttemptAutoLogin() -> Bool {
-        let isAppRelaunch = UserDefaults.standard.bool(forKey: "isAppRelaunch")
-
-        if isAppRelaunch {
-            UserDefaults.standard.set(false, forKey: "isAppRelaunch")
-            return isFaceIDEnabled
-        }
-        return false
-    }
-
-    public func toggleFaceID(_ enabled: Bool) async {
-        guard enabled else {
-            isFaceIDEnabled = false
-            UserDefaults.standard.set(false, forKey: "isFaceIDEnabled")
-            return
-        }
-
-        do {
-            let success = try await faceIDAuthenticator.authenticate()
-            if success {
-                isFaceIDEnabled = true
-                UserDefaults.standard.set(true, forKey: "isFaceIDEnabled")
-                UserDefaults.standard.set(false, forKey: "hasLoggedOut")
-                await tryAutoLogin()
-            } else {
-                isFaceIDEnabled = false
-            }
-        } catch {
-            authenticationError = "Face ID permission denied"
-            isFaceIDEnabled = false
-        }
     }
 }

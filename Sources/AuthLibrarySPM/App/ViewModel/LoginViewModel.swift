@@ -32,7 +32,11 @@ public class LoginViewModel: AuthViewModel {
         loadCredentials()
 
         Task {
-            await tryAutoLogin()
+            let isAppRelaunch = UserDefaults.standard.bool(forKey: "isAppRelaunch")
+            
+            if isFaceIDEnabled && isAppRelaunch {
+                await tryAutoLogin()
+            }
         }
     }
 
@@ -41,33 +45,33 @@ public class LoginViewModel: AuthViewModel {
         await attemptFaceIDLogin()
     }
 
-    public func attemptFaceIDLogin() async {
+    public func attemptFaceIDLogin() {
         guard !isFaceIDInProgress else { return }
-        isFaceIDInProgress = true
+        defer { isFaceIDInProgress = false }
 
-        do {
-            let success = try await faceIDAuthenticator.authenticate()
-            if success {
-                if let storedEmail = keychain.get(key: "email"),
-                   let storedPassword = keychain.get(key: "password") {
-                    email = storedEmail
-                    password = storedPassword
-                    authManager.signIn(username: email, password: password)
-                } else {
-                    authenticationError = "No saved credentials found."
+        Task {
+            do {
+                let success = try await faceIDAuthenticator.authenticate()
+                if success {
+                    if let storedEmail = keychain.get(key: "email"),
+                       let storedPassword = keychain.get(key: "password") {
+                        email = storedEmail
+                        password = storedPassword
+                        authManager.signIn(username: email, password: password)
+                    } else {
+                        authenticationError = "No saved credentials found."
+                    }
                 }
+            } catch {
+                authenticationError = error.localizedDescription
             }
-        } catch {
-            authenticationError = error.localizedDescription
+            isFaceIDInProgress = false
         }
-        isFaceIDInProgress = false
     }
 
     public func login() {
         if isFaceIDEnabled {
-            Task {
-                await attemptFaceIDLogin()
-            }
+            attemptFaceIDLogin()
         } else {
             authManager.signIn(username: email, password: password)
             handleActionResult()
@@ -88,20 +92,35 @@ public class LoginViewModel: AuthViewModel {
     }
 
     private func shouldAttemptAutoLogin() -> Bool {
-        let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
-        let hasLoggedOut = UserDefaults.standard.bool(forKey: "hasLoggedOut")
-        let wasInBackground = UserDefaults.standard.bool(forKey: "wasInBackground")
+        let isAppRelaunch = UserDefaults.standard.bool(forKey: "isAppRelaunch")
 
-        if wasInBackground {
-            UserDefaults.standard.set(false, forKey: "hasLaunchedBefore")
-            UserDefaults.standard.set(false, forKey: "wasInBackground")
-            return false
+        if isAppRelaunch {
+            UserDefaults.standard.set(false, forKey: "isAppRelaunch")
+            return isFaceIDEnabled
+        }
+        return false
+    }
+
+    public func toggleFaceID(_ enabled: Bool) async {
+        guard enabled else {
+            isFaceIDEnabled = false
+            UserDefaults.standard.set(false, forKey: "isFaceIDEnabled")
+            return
         }
 
-        if !hasLaunchedBefore {
-            UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
-            return true
+        do {
+            let success = try await faceIDAuthenticator.authenticate()
+            if success {
+                isFaceIDEnabled = true
+                UserDefaults.standard.set(true, forKey: "isFaceIDEnabled")
+                UserDefaults.standard.set(false, forKey: "hasLoggedOut")
+                await tryAutoLogin()
+            } else {
+                isFaceIDEnabled = false
+            }
+        } catch {
+            authenticationError = "Face ID permission denied"
+            isFaceIDEnabled = false
         }
-        return !hasLoggedOut
     }
 }

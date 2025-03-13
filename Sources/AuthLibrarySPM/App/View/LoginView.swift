@@ -44,7 +44,7 @@ public struct LoginView: View {
             }
 
             Button("Login", action: {
-                viewModel.login()
+                    viewModel.login()
             })
             .buttonStyle()
 
@@ -52,19 +52,17 @@ public struct LoginView: View {
 
             Spacer().frame(height: 30)
 
-            Toggle(isOn: Binding<Bool>(
-                get: { viewModel.isFaceIDEnabled },
-                set: { newValue in
-                    Task {
-                        await viewModel.toggleFaceID(newValue)
-                    }
-                }
-            )) {
+            Toggle(isOn: $viewModel.isFaceIDEnabled) {
                 Image(systemName: "faceid")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 30, height: 30)
                     .foregroundColor(viewModel.isFaceIDEnabled ? .blue : .gray)
+            }
+            .onChange(of: viewModel.isFaceIDEnabled) { newValue in
+                Task {
+                    await viewModel.toggleFaceID(newValue)
+                }
             }
             .padding(.horizontal, 100)
             .frame(maxWidth: .infinity, alignment: .center)
@@ -82,6 +80,7 @@ public struct LoginView: View {
         .padding(.horizontal, 15)
         .onAppear {
             viewModel.clearErrorMessage()
+            Task { await viewModel.tryAutoLogin() }
         }
     }
 }

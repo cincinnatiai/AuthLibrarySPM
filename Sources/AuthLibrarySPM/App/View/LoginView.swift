@@ -51,7 +51,14 @@ public struct LoginView: View {
 
             Spacer().frame(height: 30)
 
-            Toggle(isOn: $viewModel.isFaceIDEnabled) {
+            Toggle(isOn: Binding<Bool>(
+                get: { viewModel.isFaceIDEnabled },
+                set: { newValue in
+                    Task {
+                        await viewModel.toggleFaceID(newValue)
+                    }
+                }
+            )) {
                 Image(systemName: "faceid")
                     .resizable()
                     .scaledToFit()

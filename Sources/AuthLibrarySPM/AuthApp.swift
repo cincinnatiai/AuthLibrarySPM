@@ -30,11 +30,11 @@ public struct AuthApp<SessionViewType: View>: View {
 
     private func addObservers() {
         NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { _ in
-            UserDefaults.standard.set(true, forKey: "wasInBackground")
+            UserDefaults.standard.set(true, forKey: "isAppRelaunch")
         }
 
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
-            UserDefaults.standard.set(false, forKey: "wasInBackground")
+            UserDefaults.standard.set(false, forKey: "isAppRelaunch")
         }
     }
 }

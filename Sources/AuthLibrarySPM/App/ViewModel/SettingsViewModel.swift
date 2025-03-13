@@ -18,5 +18,6 @@ public class SettingsViewModel: AuthViewModel {
 
     public func signOut() {
         authManager.signOut()
+        UserDefaults.standard.set(true, forKey: "hasLoggedOut")
     }
 }

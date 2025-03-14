@@ -14,9 +14,9 @@ public class SettingsViewModel: AuthViewModel {
 
     var preferences: FaceIDPreferencesProtocol
     
-    public init(preferences: FaceIDPreferencesProtocol = FaceIDPreferencesManager()) {
+    public init(authManager: AuthManager, preferences: FaceIDPreferencesProtocol = FaceIDPreferencesManager()) {
         self.preferences = preferences
-        super.init(authManager: AuthManager.shared)
+        super.init(authManager: authManager)
     }
 
     public func signOut() {

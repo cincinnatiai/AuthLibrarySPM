@@ -12,9 +12,6 @@ import SwiftUI
 @available(iOS 13.0, *)
 @MainActor
 open class AuthManager: ObservableObject {
-
-    public static let shared = AuthManager()
-
     @Published public var authState: AuthState = .login
     @Published public var isLoggedIn: Bool = false
     @Published public var errorMessage: String? = nil

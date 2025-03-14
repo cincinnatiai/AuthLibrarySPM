@@ -9,13 +9,14 @@ import Foundation
 import LocalAuthentication
 
 @available(iOS 13.0, *)
-class FaceIDAuthenticator {
+open class FaceIDAuthenticator {
     private let context = LAContext()
 
+    public init() {}
+
     @MainActor
-    public func authenticate() async throws -> Bool {
+    open func authenticate() async throws -> Bool {
         context.localizedCancelTitle = "Use Password"
-        context.localizedFallbackTitle = "Use Password"
         
         guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) else {
             throw FaceIdError.biometryNotAvailable
@@ -34,19 +35,17 @@ class FaceIDAuthenticator {
     }
 }
 
-enum FaceIdError: Error {
+public enum FaceIdError: LocalizedError {
     case biometryNotAvailable
     case authenticationFailed(String)
     case userCanceled
     case systemCanceled
     case biometryLockout
     case invalidatedContext
-    
+
     static func mapError(_ error: LAError) -> FaceIdError {
         switch error.code {
-        case .biometryNotAvailable:
-            return .biometryNotAvailable
-        case .biometryNotEnrolled:
+        case .biometryNotAvailable, .biometryNotEnrolled:
             return .biometryNotAvailable
         case .userCancel:
             return .userCanceled
@@ -60,8 +59,8 @@ enum FaceIdError: Error {
             return .authenticationFailed(error.localizedDescription)
         }
     }
-    
-    var localizedDescription: String {
+
+    public var errorDescription: String? {
         switch self {
         case .biometryNotAvailable:
             return "Face ID is not available on this device."
@@ -72,7 +71,7 @@ enum FaceIdError: Error {
         case .systemCanceled:
             return "Authentication was interrupted."
         case .biometryLockout:
-            return "Too many failed attempts. Try again later or use password."
+            return "Too many failed attempts. Try again later or use a password."
         case .invalidatedContext:
             return "Authentication session expired. Try again."
         }

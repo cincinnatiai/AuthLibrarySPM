@@ -23,6 +23,7 @@ struct AuthenticationLibraryTests {
     @Test
     func testInitialState() {
         authManager.errorMessage = nil
+
         #expect(authManager.authState == .login)
         #expect(authManager.isLoggedIn == false)
         #expect(authManager.errorMessage == nil)
@@ -59,6 +60,7 @@ struct AuthenticationLibraryTests {
     @Test
     func testSignUpSuccess() async throws {
         let attributes = ["email": "testuser@mail.com", "name": "testuser@mail.com"]
+
         mockAuthService.signUpResult = .success(.unconfirmed)
         authManager.signUp(username: "testuser@mail.com", password: "Password1234_", attributes: attributes)
 

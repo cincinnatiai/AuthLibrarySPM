@@ -25,12 +25,14 @@ struct AuthManagerTests {
     @Test
     func testShowSignUp() {
         authManager.showSignUp()
+
         #expect(authManager.authState == .signUp)
     }
 
     @Test
     func testShowLogin() {
         authManager.showLogin()
+
         #expect(authManager.authState == .login)
     }
 
@@ -72,9 +74,10 @@ struct AuthManagerTests {
     @Test
     func testSignUp_Failure() async throws {
         mockAuthService.signUpResult = .failure(.unknown)
-
         authManager.signUp(username: "test@mail.com", password: "password", attributes: [:])
+
         try await Task.sleep(for: .milliseconds(200))
+
         #expect(authManager.errorMessage != nil)
     }
 
@@ -91,8 +94,8 @@ struct AuthManagerTests {
     @Test
     func testConfirmSignUp_Failure() async throws {
         mockAuthService.confirmSignUpResult = .failure(.unknown)
-
         authManager.confirmSignUp(username: "test@mail.com", confirmationCode: "wrongCode")
+
         try await Task.sleep(for: .milliseconds(200))
 
         #expect(authManager.errorMessage != nil)
@@ -103,7 +106,6 @@ struct AuthManagerTests {
     func testSignIn_Success() async throws {
         mockAuthService.signInResult = .success(.signedIn)
         mockAuthService.checkUserStateResult = .success(.signedIn)
-
         authManager.signIn(username: "user@mail.com", password: "password")
 
         try await Task.sleep(for: .milliseconds(200))
@@ -116,8 +118,8 @@ struct AuthManagerTests {
     @Test
     func testSignIn_Failure() async throws {
         mockAuthService.signInResult = .failure(.unknown)
-
         authManager.signIn(username: "user@mail.com", password: "wrongpassword")
+
         try await Task.sleep(for: .milliseconds(200))
 
         #expect(authManager.errorMessage != nil)
@@ -126,7 +128,6 @@ struct AuthManagerTests {
     @Test
     func testSignOut_Success() {
         mockAuthService.signOutResult = .success(())
-
         authManager.signOut()
 
         #expect(authManager.isLoggedIn == false)
@@ -137,8 +138,8 @@ struct AuthManagerTests {
     @Test
     func testSignOut_Failure() async throws {
         mockAuthService.signOutResult = .failure(.unknown)
-
         authManager.signOut()
+
         try await Task.sleep(for: .milliseconds(200))
 
         #expect(authManager.errorMessage != nil)
@@ -174,7 +175,6 @@ struct AuthManagerTests {
     @available(iOS 16.0, *)
     @Test
     func testManageToken_Failure() async throws {
-
         mockAuthService.signInResult = .success(.signedIn)
         mockAuthService.getTokenResult = .failure(.unknown)
         authManager.setTokenProtocol(mockTokenHandler)

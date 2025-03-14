@@ -3,10 +3,11 @@ import SwiftUI
 
 @available(iOS 17.0, *)
 public struct AuthApp<SessionViewType: View>: View {
-    @EnvironmentObject var authManager: AuthManager
+    @ObservedObject private var authManager: AuthManager
     private let sessionViewProvider: (String) -> SessionViewType
 
-    public init(@ViewBuilder sessionView: @escaping (String) -> SessionViewType) {
+    public init(authManager: AuthManager, @ViewBuilder sessionView: @escaping (String) -> SessionViewType) {
+        self.authManager = authManager
         self.sessionViewProvider = sessionView
     }
 
@@ -36,12 +37,5 @@ public struct AuthApp<SessionViewType: View>: View {
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
             UserDefaults.standard.set(false, forKey: "isAppRelaunch")
         }
-    }
-}
-
-@available(iOS 17.0, *)
-public extension AuthApp where SessionViewType == SessionView {
-    init() {
-        self.init { user in SessionView(viewModel: SessionViewModel(authManager: AuthManager(), user: user)) }
     }
 }

@@ -23,19 +23,20 @@ public class LoginViewModel: AuthViewModel {
     public init(
         authManager: AuthManager,
         keychain: KeychainProtocol = KeychainManager(),
-        preferences: FaceIDPreferencesProtocol = FaceIDPreferencesManager()
+        preferences: FaceIDPreferencesProtocol = FaceIDPreferencesManager(),
+        faceIDAuthenticator: FaceIDAuthenticator = FaceIDAuthenticator()
     ) {
         self.keychain = keychain
         self.preferences = preferences
-        self.faceIDAuthenticator = FaceIDAuthenticator()
+        self.faceIDAuthenticator = faceIDAuthenticator
         self.isFaceIDEnabled = preferences.isFaceIDEnabled
         super.init(authManager: authManager)
 
         loadCredentials()
     }
 
-    public func login() {
-        isFaceIDEnabled ? authenticateAndLogin() : manualLogin()
+    public func login() async {
+        await isFaceIDEnabled ? authenticateAndLogin() : manualLogin()
     }
 
     private func manualLogin() {
@@ -50,22 +51,20 @@ public class LoginViewModel: AuthViewModel {
         await authenticateAndLogin()
     }
 
-    private func authenticateAndLogin() {
+    func authenticateAndLogin() async {
         guard !isFaceIDInProgress else { return }
         isFaceIDInProgress = true
 
-        Task {
             do {
                 guard try await faceIDAuthenticator.authenticate() else { return }
                 guard let credentials = fetchStoredCredentials() else {
                     authenticationError = "No saved credentials found."
                     return
                 }
-                login(with: credentials)
+                await login(with: credentials)
             } catch {
                 authenticationError = error.localizedDescription
             }
-        }
     }
 
     private func fetchStoredCredentials() -> (email: String, password: String)? {
@@ -74,7 +73,7 @@ public class LoginViewModel: AuthViewModel {
         return (email, password)
     }
 
-    private func login(with credentials: (email: String, password: String)) {
+    private func login(with credentials: (email: String, password: String)) async {
         email = credentials.email
         password = credentials.password
         authManager.signIn(username: email, password: password)
@@ -94,6 +93,9 @@ public class LoginViewModel: AuthViewModel {
             isFaceIDEnabled = true
             preferences.hasLoggedOut = false
             await tryAutoLogin()
+        } catch let error as FaceIdError {
+            authenticationError = error.localizedDescription
+            isFaceIDEnabled = false
         } catch {
             authenticationError = "Face ID permission denied"
             isFaceIDEnabled = false
@@ -106,5 +108,9 @@ public class LoginViewModel: AuthViewModel {
 
     public func loadCredentials() {
         email = keychain.get(key: "email") ?? ""
+    }
+
+    override public func clearErrorMessage() {
+        super.clearErrorMessage()
     }
 }

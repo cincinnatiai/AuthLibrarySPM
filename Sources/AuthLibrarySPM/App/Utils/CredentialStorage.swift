@@ -11,6 +11,7 @@ import KeychainSwift
 public protocol KeychainProtocol {
     func set(_ value: String, key: String)
     func get(key: String) -> String?
+    func remove(key: String)
 }
 
 final public class KeychainManager: KeychainProtocol {
@@ -27,5 +28,9 @@ final public class KeychainManager: KeychainProtocol {
     
     public func get(key: String) -> String? {
         return keychain.get(key)
+    }
+
+    public func remove(key: String) {
+        keychain.delete(key)
     }
 }

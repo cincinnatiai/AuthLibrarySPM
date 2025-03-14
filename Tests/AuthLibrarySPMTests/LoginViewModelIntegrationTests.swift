@@ -49,8 +49,9 @@ struct LoginViewModelIntegrationTests {
     func testSuccessfulLogin() async throws {
 
         // Given (Provide an actual mail and password)
-        viewModel.email = "your-email@email.com"
-        viewModel.password = "yourPassw0rd"
+        viewModel.email = "your-email@mail.com"
+        viewModel.password = "your-password"
+        viewModel.isFaceIDEnabled = false
         mockAuthService.getTokenResult = .success("Mock-Token")
         authManager.setTokenProtocol(mockTokenHandler)
 
@@ -73,15 +74,20 @@ struct LoginViewModelIntegrationTests {
     @available(iOS 16.0, *)
     @Test
     func testFailedLogin() async throws {
-
+        // Given
         viewModel.email = "wrong@example.com"
         viewModel.password = "wrong_password"
-
-        await withCheckedContinuation { continuation in
-            authManager.signIn(username: viewModel.email, password: viewModel.password)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { continuation .resume() }
+        viewModel.isFaceIDEnabled = false
+        
+        // When
+        authManager.signIn(username: viewModel.email, password: viewModel.password)
+        
+        // Then
+        let timeout = Date().addingTimeInterval(2.0)
+        while authManager.errorMessage == nil, Date() < timeout {
+            try? await Task.sleep(nanoseconds: 100_000_000)
         }
-
+        
         #expect(authManager.errorMessage == "Incorrect username or password.")
     }
 

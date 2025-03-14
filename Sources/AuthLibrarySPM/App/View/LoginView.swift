@@ -44,7 +44,9 @@ public struct LoginView: View {
             }
 
             Button("Login", action: {
-                    viewModel.login()
+                Task {
+                    await viewModel.login()
+                }
             })
             .buttonStyle()
 

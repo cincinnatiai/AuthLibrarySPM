@@ -37,7 +37,7 @@ public struct LoginView: View {
                     isPasswordVisible.toggle()
                 }) {
                     Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                        .foregroundColor(.gray)
+                        .foregroundColor(.accentColor)
                 }
                 .padding()
                 .buttonStyle(PlainButtonStyle())
@@ -89,5 +89,5 @@ public struct LoginView: View {
 
 @available(iOS 17.0, *)
 #Preview {
-    LoginView(viewModel: LoginViewModel(authManager: AuthManager()))
+    LoginView(viewModel: LoginViewModel(authManager: AuthManager(), preferences: FaceIDPreferencesManager()))
 }

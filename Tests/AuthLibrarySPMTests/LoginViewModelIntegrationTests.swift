@@ -13,7 +13,7 @@ import AWSMobileClientXCF
 @Suite
 @MainActor
 struct LoginViewModelIntegrationTests {
-    
+
     var authManager: AuthManager
     var keychain: KeychainProtocol
     var viewModel: LoginViewModel
@@ -41,7 +41,7 @@ struct LoginViewModelIntegrationTests {
         self.mockAuthService = MockAuthService()
         self.keychain = MockKeychainValues()
 
-        self.viewModel = LoginViewModel(authManager: authManager, keychain: keychain)
+        self.viewModel = LoginViewModel(authManager: authManager, keychain: keychain, preferences: MockFaceIDPreferences())
     }
 
     @available(iOS 16.0, *)

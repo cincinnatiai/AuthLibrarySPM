@@ -4,6 +4,7 @@ import SwiftUI
 @available(iOS 17.0, *)
 public struct AuthApp<SessionViewType: View>: View {
     @ObservedObject private var authManager: AuthManager
+    @StateObject private var appLifecycleObserver = AppLifecycleObserver()
     private let sessionViewProvider: (String) -> SessionViewType
 
     public init(authManager: AuthManager, @ViewBuilder sessionView: @escaping (String) -> SessionViewType) {
@@ -15,7 +16,7 @@ public struct AuthApp<SessionViewType: View>: View {
         VStack {
             switch authManager.authState {
             case .login:
-                LoginView(viewModel: LoginViewModel(authManager: authManager))
+                LoginView(viewModel: LoginViewModel(authManager: authManager, preferences: FaceIDPreferencesManager()))
             case .signUp:
                 SignUpView(viewModel: SignUpViewModel(authManager: authManager))
             case .confirmCode(let username):
@@ -23,19 +24,6 @@ public struct AuthApp<SessionViewType: View>: View {
             case .session(let user):
                 sessionViewProvider(user)
             }
-        }
-        .onAppear {
-            addObservers()
-        }
-    }
-
-    private func addObservers() {
-        NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { _ in
-            UserDefaults.standard.set(true, forKey: "isAppRelaunch")
-        }
-
-        NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
-            UserDefaults.standard.set(false, forKey: "isAppRelaunch")
         }
     }
 }

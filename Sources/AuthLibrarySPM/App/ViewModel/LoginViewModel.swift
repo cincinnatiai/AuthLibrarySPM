@@ -23,7 +23,7 @@ public class LoginViewModel: AuthViewModel {
     public init(
         authManager: AuthManager,
         keychain: KeychainProtocol = KeychainManager(),
-        preferences: FaceIDPreferencesProtocol = FaceIDPreferencesManager(),
+        preferences: FaceIDPreferencesProtocol,
         faceIDAuthenticator: FaceIDAuthenticator = FaceIDAuthenticator()
     ) {
         self.keychain = keychain

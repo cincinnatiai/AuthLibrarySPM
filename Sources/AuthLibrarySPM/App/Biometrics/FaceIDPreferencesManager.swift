@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 public protocol FaceIDPreferencesProtocol {
     var isFaceIDEnabled: Bool { get set }
@@ -13,23 +14,12 @@ public protocol FaceIDPreferencesProtocol {
     var hasLoggedOut: Bool { get set }
 }
 
-public class FaceIDPreferencesManager: FaceIDPreferencesProtocol {
-    private let defaults = UserDefaults.standard
+@available(iOS 14.0, *)
+public class FaceIDPreferencesManager: ObservableObject, FaceIDPreferencesProtocol {
 
     public init() {}
 
-    public var isFaceIDEnabled: Bool {
-        get { defaults.bool(forKey: "isFaceIDEnabled") }
-        set { defaults.set(newValue, forKey: "isFaceIDEnabled") }
-    }
-
-    public var isAppRelaunch: Bool {
-        get { defaults.bool(forKey: "isAppRelaunch") }
-        set { defaults.set(newValue, forKey: "isAppRelaunch") }
-    }
-
-    public var hasLoggedOut: Bool {
-        get { defaults.bool(forKey: "hasLoggedOut") }
-        set { defaults.set(newValue, forKey: "hasLoggedOut") }
-    }
+    @AppStorage("isFaceIDEnabled") public var isFaceIDEnabled = false
+    @AppStorage("isAppRelaunch") public var isAppRelaunch = false
+    @AppStorage("hasLoggedOut") public var hasLoggedOut = false
 }

@@ -10,6 +10,7 @@ import SwiftUI
 @available(iOS 17.0, *)
 public struct LoginView: View {
     @StateObject private var viewModel: LoginViewModel
+    @State private var isPasswordVisible: Bool = false
 
     init(viewModel: LoginViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)

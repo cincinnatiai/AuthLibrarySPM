@@ -19,4 +19,8 @@ class MockKeychainValues: KeychainProtocol {
     func get(key: String) -> String? {
         return keychain[key] as? String
     }
+
+    func remove(key: String) {
+        keychain[key] = nil
+    }
 }

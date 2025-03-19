@@ -6,73 +6,80 @@
 //
 
 import AWSMobileClientXCF
+import Combine
 
 @available(iOS 13.0, *)
 public class AuthService: AuthServiceProtocol {
 
-    public init() { }
+    private let awsMobileClient: AWSMobileClient
 
-    public func signUp(username: String, password: String, attributes: [String: String], completion: @escaping (Result<SignUpConfirmationState, AuthError>) -> Void) {
-        execute(
-            operation: { AWSMobileClient.default().signUp(username: username, password: password, userAttributes: attributes, completionHandler: $0) },
-            transform: { $0.signUpConfirmationState },
-            completion: completion
+    public init(awsmobileClient: AWSMobileClient = AWSMobileClient.default()) {
+        self.awsMobileClient = awsmobileClient
+    }
+
+    public func signUp(username: String, password: String, attributes: [String: String]) -> AnyPublisher<SignUpConfirmationState, AuthError> {
+        execute (
+            operation: { self.awsMobileClient.signUp(username: username, password: password, userAttributes: attributes, completionHandler: $0) },
+            transform: { $0.signUpConfirmationState }
         )
     }
 
-    public func confirmSignUp(username: String, confirmationCode: String, completion: @escaping (Result<Void, AuthError>) -> Void) {
+    public func confirmSignUp(username: String, confirmationCode: String) -> AnyPublisher<Void, AuthError> {
         execute(
-            operation: { AWSMobileClient.default().confirmSignUp(username: username, confirmationCode: confirmationCode, completionHandler: $0) },
-            transform: { _ in () },
-            completion: completion
+            operation: { self.awsMobileClient.confirmSignUp(username: username, confirmationCode: confirmationCode, completionHandler: $0) },
+            transform: { _ in () }
         )
     }
 
-    public func signIn(username: String, password: String, completion: @escaping (Result<SignInState, AuthError>) -> Void) {
+    public func signIn(username: String, password: String) -> AnyPublisher<SignInState, AuthError> {
         execute(
-            operation: { AWSMobileClient.default().signIn(username: username, password: password, completionHandler: $0) },
-            transform: { $0.signInState },
-            completion: completion
+            operation: { self.awsMobileClient.signIn(username: username, password: password, completionHandler: $0) },
+            transform: { $0.signInState }
         )
     }
 
-    public func signOut(completion: @escaping (Result<Void, AuthError>) -> Void) {
-        AWSMobileClient.default().signOut { error in
-            if let error = error as? AWSMobileClientError {
-                completion(.failure(.awsError(error)))
-            } else {
-                completion(.success(()))
-            }
+    public func signOut() -> AnyPublisher<Void, AuthError> {
+        execute(
+            operation: { completion in
+                self.awsMobileClient.signOut { error in
+                    completion(nil, error)
+                }
+            },
+            transform: { (_: Void) in () }
+        )
+    }
+
+    public func getTokenId() -> AnyPublisher<String, AuthError> {
+        execute(operation: { self.awsMobileClient.getTokens($0) },
+                transform: { tokens in tokens?.idToken?.tokenString }
+        )
+    }
+
+    public func checkUserState() -> AnyPublisher<UserState, AuthError> {
+        Future<UserState, AuthError> { promise in
+            let state = self.awsMobileClient.currentUserState
+            promise(.success(state))
         }
+        .eraseToAnyPublisher()
     }
 
-    public func checkUserState(completion: @escaping (Result<UserState, AuthError>) -> Void) {
-        completion(.success(AWSMobileClient.default().currentUserState))
-    }
-
-    public func getTokenId(completion: @escaping (Result<String, AuthError>) -> Void) {
-        AWSMobileClient.default().getTokens { tokens, error in
-            if let error = error as? AWSMobileClientError {
-                completion(.failure(.awsError(error)))
-            } else if let idToken = tokens?.idToken?.tokenString {
-                completion(.success(idToken))
-            } else {
-                completion(.failure(.unknown))
-            }
-        }
-    }
 }
 
+@available(iOS 13.0, *)
 private func execute<T, R>(
-    operation: (@escaping (R?, Error?) -> Void) -> Void,
-    transform: @escaping (R) -> T,
-    completion: @escaping (Result<T, AuthError>) -> Void
-) {
-    operation { result, error in
-        if let error = error as? AWSMobileClientError {
-            completion(.failure(.awsError(error)))
-        } else if let result = result {
-            completion(.success(transform(result)))
+    operation: @escaping (@escaping (R?, Error?) -> Void) -> Void,
+    transform: @escaping (R) -> T?
+) -> AnyPublisher<T, AuthError> {
+    Future<T, AuthError> { promise in
+        operation { result, error in
+            if let error = error as? AWSMobileClientError {
+                promise(.failure(.awsError(error)))
+            } else if let result = result, let transformed = transform(result) {
+                promise(.success(transformed))
+            } else {
+                promise(.failure(.unknown))
+            }
         }
     }
+    .eraseToAnyPublisher()
 }

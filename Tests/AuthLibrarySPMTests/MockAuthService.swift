@@ -9,6 +9,7 @@
 import Testing
 @testable import AuthLibrarySPM
 import AWSMobileClientXCF
+import Combine
 
 class MockAuthService: AuthServiceProtocol {
 
@@ -19,27 +20,69 @@ class MockAuthService: AuthServiceProtocol {
     var checkUserStateResult: Result<UserState, AuthError>?
     var getTokenResult: Result<String,AuthError>?
 
-    func signUp(username: String, password: String, attributes: [String : String], completion: @escaping (Result<SignUpConfirmationState, AuthError>) -> Void) {
-        completion(signUpResult ?? .success(.unconfirmed))
+    func signUp(username: String, password: String, attributes: [String : String]) -> AnyPublisher<SignUpConfirmationState, AuthError> {
+        Future<SignUpConfirmationState, AuthError> { promise in
+            if let result = self.signUpResult {
+                promise(result)
+            } else {
+                promise(.success(.unconfirmed))
+            }
+        }
+        .eraseToAnyPublisher()
     }
 
-    func confirmSignUp(username: String, confirmationCode: String, completion: @escaping (Result<Void, AuthError>) -> Void) {
-        completion(confirmSignUpResult ?? .success(()))
+    func confirmSignUp(username: String, confirmationCode: String) -> AnyPublisher<Void, AuthError> {
+        Future<Void, AuthError> { promise in
+            if let result = self.confirmSignUpResult {
+                promise(result)
+            } else {
+                promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
     }
 
-    func signIn(username: String, password: String, completion: @escaping (Result<SignInState, AuthError>) -> Void) {
-        completion(signInResult ?? .failure(.unknown))
+    func signIn(username: String, password: String) -> AnyPublisher<SignInState, AuthError> {
+        Future<SignInState, AuthError> { promise in
+            if let result = self.signInResult {
+                promise(result)
+            } else {
+                promise(.failure(.unknown))
+            }
+        }
+        .eraseToAnyPublisher()
     }
 
-    func signOut(completion: @escaping (Result<Void, AuthError>) -> Void) {
-        completion(signOutResult ?? .success(()))
+    func signOut() -> AnyPublisher<Void, AuthError> {
+        Future<Void, AuthError> { promise in
+            if let result = self.signOutResult {
+                promise(result)
+            } else {
+                promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
     }
 
-    func checkUserState(completion: @escaping (Result<UserState, AuthError>) -> Void) {
-        completion(checkUserStateResult ?? .success(.signedOut))
+    func checkUserState() -> AnyPublisher<UserState, AuthError> {
+        Future<UserState, AuthError> { promise in
+            if let result = self.checkUserStateResult {
+                promise(result)
+            } else {
+                promise(.success(.signedOut))
+            }
+        }
+        .eraseToAnyPublisher()
     }
 
-    func getTokenId(completion: @escaping (Result<String, AuthLibrarySPM.AuthError>) -> Void) {
-        completion (getTokenResult ?? .failure(.unknown))
+    func getTokenId() -> AnyPublisher<String, AuthError> {
+        Future<String, AuthError> { promise in
+            if let result = self.getTokenResult {
+                promise(result)
+            } else {
+                promise(.failure(.unknown))
+            }
+        }
+        .eraseToAnyPublisher()
     }
 }

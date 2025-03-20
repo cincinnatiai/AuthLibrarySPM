@@ -7,6 +7,7 @@
 
 import Foundation
 import AWSMobileClientXCF
+import Combine
 import SwiftUI
 
 @available(iOS 13.0, *)
@@ -18,6 +19,7 @@ open class AuthManager: ObservableObject {
 
     private let authService: AuthServiceProtocol
     private var tokenProtocol: TokenManagerProtocol?
+    private var cancellables: Set<AnyCancellable> = []
 
     public init(authService: AuthServiceProtocol = AuthService()) {
         self.authService = authService
@@ -43,112 +45,61 @@ open class AuthManager: ObservableObject {
     }
 
     open func checkUserState() {
-        authService.checkUserState { [weak self] result in
-            switch result {
-            case .success(let userState):
-                DispatchQueue.main.async {
-                    if case .confirmCode(_) = self?.authState {
-                        return
-                    }
-                    self?.isLoggedIn = (userState == .signedIn)
-                    self?.authState = self?.isLoggedIn == true ? .session(user: "Session initiated") : .login
-                    self?.errorMessage = nil
-                }
-            case .failure(let error):
-                self?.handleError(error)
-            }
+        handlePublisher(authService.checkUserState()) { [weak self] userState in
+            guard let self = self else { return }
+            if case .confirmCode = authState { return }
+            self.isLoggedIn = (userState == .signedIn)
+            self.authState = self.isLoggedIn ? .session(user: "Session initiated") : .login
+            self.errorMessage = nil
         }
     }
 
     open func signUp(username: String, password: String, attributes: [String: String]) {
-        authService.signUp(username: username, password: password, attributes: attributes) { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let signUpResult):
-                    if signUpResult != .confirmed {
-                        self?.authState = .confirmCode(username: username)
-                    }
-                    self?.errorMessage = nil
-                case .failure(let error):
-                    self?.handleError(error)
-                }
+        handlePublisher(authService.signUp(username: username, password: password, attributes: attributes)) { [weak self] signUpResult in
+            if signUpResult != .confirmed {
+                self?.authState = .confirmCode(username: username)
             }
+            self?.errorMessage = nil
         }
     }
 
     open func confirmSignUp(username: String, confirmationCode: String) {
-        authService.confirmSignUp(username: username, confirmationCode: confirmationCode) { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    self?.showLogin()
-                case .failure(let error):
-                    self?.handleError(error)
-                }
-            }
+        handlePublisher(authService.confirmSignUp(username: username, confirmationCode: confirmationCode)) { [weak self] _ in
+            self?.showLogin()
         }
     }
 
     open func signIn(username: String, password: String) {
-        authService.signIn(username: username, password: password) { [weak self] result in
-            DispatchQueue.main.async { [weak self] in
-                if case .success(let signInResult) = result, signInResult == .signedIn {
-                    self?.isLoggedIn = true
-                    self?.checkUserState()
-                    self?.manageToken()
-                } else if case .failure(let error) = result {
-                    self?.handleError(error)
-                }
+        handlePublisher(authService.signIn(username: username, password: password)) { [weak self] signInResult in
+            if signInResult == .signedIn {
+                self?.isLoggedIn = true
+                self?.checkUserState()
+                self?.manageToken()
             }
         }
     }
 
     open func signOut() {
-        authService.signOut { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    self?.isLoggedIn = false
-                    self?.checkUserState()
-                    self?.errorMessage = nil
-                case .failure(let error):
-                    self?.handleError(error)
-                }
-            }
+        handlePublisher(authService.signOut()) { [weak self] in
+            self?.isLoggedIn = false
+            self?.checkUserState()
+            self?.errorMessage = nil
         }
     }
 
-    open func handleError(_ error: AuthError) {
-        DispatchQueue.main.async {
-            switch error {
-            case .awsError(let awsError):
-                switch awsError {
-                case .invalidPassword(_),
-                     .limitExceeded(_),
-                     .mfaMethodNotFound(_),
-                     .notAuthorized(_),
-                     .passwordResetRequired(_),
-                     .userNotConfirmed(_),
-                     .userNotFound(_),
-                     .usernameExists(_),
-                     .notSignedIn(_),
-                     .tooManyFailedAttempts(_),
-                     .tooManyRequests(_),
-                     .unableToSignIn(_),
-                     .aliasExists(_),
-                     .expiredCode(_),
-                     .invalidState(_),
-                     .badRequest(_),
-                     .unknown(_),
-                     .invalidParameter(_):
-                    self.errorMessage = awsError.message
-                default:
-                    self.errorMessage = "An unknown error occurred."
-                }
-            case .unknown:
-                self.errorMessage = "An unknown error occurred."
-            }
+    private func manageToken() {
+        handlePublisher(authService.getTokenId()) { [weak self] token in
+            guard let self, let tokenProtocol else { return }
+            tokenProtocol.manageTokenId(idToken: token)
         }
+    }
+
+    public func setTokenProtocol(_ tokenProtocol: TokenManagerProtocol) {
+        self.tokenProtocol = tokenProtocol
+    }
+
+    open func handleError(_ error: AuthError) {
+        self.errorMessage = error.errorMessage
     }
 
     open func clearErrorMessage() {
@@ -167,21 +118,46 @@ open class AuthManager: ObservableObject {
 
 @available(iOS 13.0, *)
 extension AuthManager {
-    private func manageToken() {
-        self.authService.getTokenId(completion: { [weak self] tokenResult in
-            guard let self else { return }
-            switch tokenResult {
-            case .success(let token):
-                guard let tokenProtocol else { return }
-                tokenProtocol.manageTokenId(idToken: token)
-            case .failure(let error):
-                self.handleError(error)
+    private func handlePublisher<T>(_ publisher: AnyPublisher<T, AuthError>, success: @escaping (T) -> Void) {
+        publisher
+            .mapError { error -> AuthError in
+                if case let .awsError(awsError) = error {
+                    return self.filteredAuthError(awsError)
+                }
+                return .unknown
             }
-        })
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [weak self] completion in
+                if case .failure(let error) = completion {
+                    self?.handleError(error)
+                }
+            }, receiveValue: { success($0) })
+            .store(in: &cancellables)
     }
 
-    public func setTokenProtocol(_ tokenProtocol: TokenManagerProtocol) {
-        self.tokenProtocol = tokenProtocol
+    private func filteredAuthError(_ error: AWSMobileClientError) -> AuthError {
+        switch error {
+        case .invalidPassword,
+             .mfaMethodNotFound,
+             .notAuthorized,
+             .passwordResetRequired,
+             .userNotConfirmed,
+             .userNotFound,
+             .usernameExists,
+             .notSignedIn,
+             .tooManyFailedAttempts,
+             .tooManyRequests,
+             .unableToSignIn,
+             .aliasExists,
+             .expiredCode,
+             .invalidState,
+             .badRequest,
+             .unknown,
+             .invalidParameter:
+            return .awsError(error)
+        default:
+            return .unknown
+        }
     }
 }
 
@@ -195,4 +171,15 @@ public enum AuthState: Equatable {
 public enum AuthError: Error {
     case awsError(AWSMobileClientError)
     case unknown
+}
+
+extension AuthError {
+    var errorMessage: String {
+        switch self {
+        case .awsError(let error):
+            return error.stringMessage
+        case .unknown:
+            return "An unknown error occurred."
+        }
+    }
 }

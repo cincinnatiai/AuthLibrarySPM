@@ -30,8 +30,8 @@ public class AuthViewModel: ObservableObject {
         authManager.$errorMessage
             .map { $0 != nil }
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] newValue in
-                self?.showError = newValue
+            .sink { [weak self] shouldShowError in
+                self?.showError = shouldShowError
             }
             .store(in: &cancellables)
     }

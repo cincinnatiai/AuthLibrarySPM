@@ -152,8 +152,6 @@ struct AuthManagerTests {
 
         authManager.handleError(.awsError(awsError))
 
-        try await Task.sleep(for: .milliseconds(200))
-
         #expect(authManager.errorMessage == awsError.stringMessage)
     }
 

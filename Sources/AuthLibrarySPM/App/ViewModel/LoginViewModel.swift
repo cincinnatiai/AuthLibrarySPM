@@ -45,7 +45,7 @@ public class LoginViewModel: AuthViewModel {
         keychain.set(email, key: "email")
     }
 
-    func tryAutoLogin() async {
+    public func tryAutoLogin() async {
         guard preferences.isAppRelaunch, isFaceIDEnabled else { return }
         preferences.isAppRelaunch = false
         await authenticateAndLogin()

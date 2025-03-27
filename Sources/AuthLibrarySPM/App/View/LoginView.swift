@@ -8,21 +8,45 @@
 import SwiftUI
 
 @available(iOS 17.0, *)
-public struct LoginView: View {
-    @StateObject private var viewModel: LoginViewModel
+public struct LoginView: BaseLoginView {
+    
+    @StateObject public var viewModel: LoginViewModel
     @State private var isPasswordVisible: Bool = false
-
-    init(viewModel: LoginViewModel) {
+    
+    public init(viewModel: LoginViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
-
+    
     public var body: some View {
         VStack {
             Spacer()
+            emailTextField()
+            passwordTextField()
+            loginButton()
+            errorMessageLabel()
+            Spacer().frame(height: 30)
+            faceIDToggle()
+            Spacer()
+            signUpButton()
+        }
+        .padding()
+        .padding(.horizontal, 15)
+        .onAppear {
+            clearErrorMessage()
+            Task { await viewModel.tryAutoLogin() }
+        }
+    }
+    
+    public func emailTextField() -> AnyView {
+        AnyView (
             TextField("Email", text: $viewModel.email)
                 .textFieldStyle()
                 .keyboardType(.emailAddress)
-
+        )
+    }
+    
+    public func passwordTextField() -> AnyView {
+        AnyView (
             ZStack(alignment:  .trailing) {
                 if isPasswordVisible  {
                     TextField("Password", text: $viewModel.password)
@@ -42,18 +66,28 @@ public struct LoginView: View {
                 .padding()
                 .buttonStyle(PlainButtonStyle())
             }
-
+        )
+    }
+    
+    public func loginButton() -> AnyView {
+        AnyView (
             Button("Login", action: {
                 Task {
                     await viewModel.login()
                 }
             })
             .buttonStyle()
-
+        )
+    }
+    
+    public func errorMessageLabel() -> AnyView {
+        AnyView (
             viewModel.authManager.errorTextView
-
-            Spacer().frame(height: 30)
-
+        )
+    }
+    
+    public func faceIDToggle() -> AnyView {
+        AnyView (
             Toggle(isOn: $viewModel.isFaceIDEnabled) {
                 Image(systemName: "faceid")
                     .resizable()
@@ -61,29 +95,29 @@ public struct LoginView: View {
                     .frame(width: 30, height: 30)
                     .foregroundColor(viewModel.isFaceIDEnabled ? .blue : .gray)
             }
-            .onChange(of: viewModel.isFaceIDEnabled) { newValue in
-                Task {
-                    await viewModel.toggleFaceID(newValue)
+                .onChange(of: viewModel.isFaceIDEnabled) { newValue in
+                    Task {
+                        await viewModel.toggleFaceID(newValue)
+                    }
                 }
-            }
-            .padding(.horizontal, 100)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .tint(.blue)
-            .scaleEffect(0.8)
-
-            Spacer()
-
+                .padding(.horizontal, 100)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .tint(.blue)
+                .scaleEffect(0.8)
+        )
+    }
+    
+    public func signUpButton() -> AnyView {
+        AnyView (
             Button("Don't have an account? Sign up.", action: {
                 viewModel.signUp()
             })
             .padding(.top, 20)
-        }
-        .padding()
-        .padding(.horizontal, 15)
-        .onAppear {
-            viewModel.clearErrorMessage()
-            Task { await viewModel.tryAutoLogin() }
-        }
+        )
+    }
+    
+    public func clearErrorMessage() {
+        viewModel.clearErrorMessage()
     }
 }
 

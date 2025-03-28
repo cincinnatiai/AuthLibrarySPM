@@ -20,14 +20,14 @@ public struct LoginView: BaseLoginView {
     public var body: some View {
         VStack {
             Spacer()
-            emailTextField()
-            passwordTextField()
-            loginButton()
-            errorMessageLabel()
+            emailTextField
+            passwordTextField
+            loginButton
+            errorMessageLabel
             Spacer().frame(height: 30)
-            faceIDToggle()
+            faceIDToggle
             Spacer()
-            signUpButton()
+            signUpButton
         }
         .padding()
         .padding(.horizontal, 15)
@@ -37,7 +37,7 @@ public struct LoginView: BaseLoginView {
         }
     }
     
-    public func emailTextField() -> AnyView {
+    public var emailTextField: AnyView {
         AnyView (
             TextField("Email", text: $viewModel.email)
                 .textFieldStyle()
@@ -45,7 +45,7 @@ public struct LoginView: BaseLoginView {
         )
     }
     
-    public func passwordTextField() -> AnyView {
+    public var passwordTextField: AnyView {
         AnyView (
             ZStack(alignment:  .trailing) {
                 if isPasswordVisible  {
@@ -69,7 +69,7 @@ public struct LoginView: BaseLoginView {
         )
     }
     
-    public func loginButton() -> AnyView {
+    public var loginButton: AnyView {
         AnyView (
             Button("Login", action: {
                 Task {
@@ -80,13 +80,13 @@ public struct LoginView: BaseLoginView {
         )
     }
     
-    public func errorMessageLabel() -> AnyView {
+    public var errorMessageLabel: AnyView {
         AnyView (
             viewModel.authManager.errorTextView
         )
     }
     
-    public func faceIDToggle() -> AnyView {
+    public var faceIDToggle: AnyView {
         AnyView (
             Toggle(isOn: $viewModel.isFaceIDEnabled) {
                 Image(systemName: "faceid")
@@ -107,7 +107,7 @@ public struct LoginView: BaseLoginView {
         )
     }
     
-    public func signUpButton() -> AnyView {
+    public var signUpButton: AnyView {
         AnyView (
             Button("Don't have an account? Sign up.", action: {
                 viewModel.signUp()

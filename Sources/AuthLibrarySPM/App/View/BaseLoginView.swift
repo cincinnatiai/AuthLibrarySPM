@@ -10,13 +10,13 @@ import SwiftUI
 
 @available(iOS 18.0, *)
 public protocol BaseLoginView: View {
-    var viewModel: LoginViewModel {get}
+    var viewModel: LoginViewModel { get }
+    var emailTextField: AnyView { get }
+    var passwordTextField: AnyView { get }
+    var loginButton: AnyView { get }
+    var errorMessageLabel: AnyView { get }
+    var faceIDToggle: AnyView { get }
+    var signUpButton: AnyView { get }
     
-    func emailTextField() -> AnyView
-    func passwordTextField() -> AnyView
-    func loginButton() -> AnyView
-    func errorMessageLabel() -> AnyView
-    func faceIDToggle() -> AnyView
-    func signUpButton() -> AnyView
     func clearErrorMessage()
 }

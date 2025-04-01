@@ -43,6 +43,7 @@ public class LoginViewModel: AuthViewModel {
         authManager.signIn(username: email, password: password)
         handleActionResult()
         keychain.set(email, key: "email")
+        keychain.set(password, key: "password")
     }
 
     public func tryAutoLogin() async {

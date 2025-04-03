@@ -42,7 +42,7 @@ public class AuthService: AuthServiceProtocol {
         execute(
             operation: { completion in
                 self.awsMobileClient.signOut { error in
-                    completion(nil, error)
+                    completion((), error)
                 }
             },
             transform: { (_: Void) in () }

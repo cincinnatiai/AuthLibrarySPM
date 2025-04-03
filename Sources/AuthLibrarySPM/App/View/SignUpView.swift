@@ -10,11 +10,11 @@ import SwiftUI
 @available(iOS 14.0, *)
 public struct SignUpView: View {
     @StateObject private var viewModel: SignUpViewModel
-    
+
     init(viewModel: SignUpViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
-    
+
     public var body: some View {
         VStack {
             Spacer()
@@ -28,11 +28,11 @@ public struct SignUpView: View {
                 viewModel.signUp()
             })
             .buttonStyle()
-            
-            viewModel.authManager.errorTextView
-            
+
+            viewModel.errorTextView
+
             Spacer()
-            
+
             Button("Already have an account? Log in.", action: {
                 viewModel.showLogin()
             })

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-@available(iOS 14.0, *)
+@available(iOS 13.0, *)
 @MainActor
 public class LoginViewModel: AuthViewModel {
     @Published public var email: String = ""
@@ -55,16 +55,16 @@ public class LoginViewModel: AuthViewModel {
         guard !isFaceIDInProgress else { return }
         isFaceIDInProgress = true
 
-            do {
-                guard try await faceIDAuthenticator.authenticate() else { return }
-                guard let credentials = fetchStoredCredentials() else {
-                    authenticationError = "No saved credentials found."
-                    return
-                }
-                await login(with: credentials)
-            } catch {
-                authenticationError = error.localizedDescription
+        do {
+            guard try await faceIDAuthenticator.authenticate() else { return }
+            guard let credentials = fetchStoredCredentials() else {
+                authenticationError = "No saved credentials found."
+                return
             }
+            await login(with: credentials)
+        } catch {
+            authenticationError = error.localizedDescription
+        }
     }
 
     private func fetchStoredCredentials() -> (email: String, password: String)? {

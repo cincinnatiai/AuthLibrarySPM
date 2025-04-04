@@ -15,14 +15,14 @@ import SwiftUI
 open class AuthManager: ObservableObject {
     @Published public var isLoggedIn: Bool = false
 
-    private var authStateSubject = CurrentValueSubject<AuthState, Never>(.login)
-    private var errorSubject = PassthroughSubject<String?, Never>()
+    public private(set) var authStateSubject = CurrentValueSubject<AuthState, Never>(.login)
+    public private(set) var errorSubject = PassthroughSubject<String?, Never>()
 
-    var authStatePublisher: AnyPublisher<AuthState, Never> {
+    public var authStatePublisher: AnyPublisher<AuthState, Never> {
         authStateSubject.eraseToAnyPublisher()
     }
 
-    var errorPublisher: AnyPublisher<String?, Never> {
+    public var errorPublisher: AnyPublisher<String?, Never> {
         errorSubject.eraseToAnyPublisher()
     }
 
@@ -136,7 +136,7 @@ extension AuthManager {
             }, receiveValue: { success($0) })
             .store(in: &cancellables)
     }
-    
+
     private func filteredAuthError(_ error: AWSMobileClientError) -> AuthError {
         switch error {
         case .invalidPassword,

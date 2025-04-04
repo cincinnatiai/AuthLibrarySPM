@@ -26,14 +26,14 @@ struct AuthManagerTests {
     func testShowSignUp() {
         authManager.showSignUp()
 
-        #expect(authManager.authState == .signUp)
+        #expect(authManager.authStateSubject.value == .signUp)
     }
 
     @Test
     func testShowLogin() {
         authManager.showLogin()
 
-        #expect(authManager.authState == .login)
+        #expect(authManager.authStateSubject.value == .login)
     }
 
     @available(iOS 16.0, *)
@@ -45,9 +45,8 @@ struct AuthManagerTests {
         try await Task.sleep(for: .milliseconds(200))
 
         #expect(authManager.isLoggedIn == true)
-        #expect(authManager.authState == .session(user: "Session initiated"))
+        #expect(authManager.authStateSubject.value == .session(user: "Session initiated"))
     }
-
 
     @Test
     func testCheckUserState_NotSignedIn() {
@@ -55,7 +54,7 @@ struct AuthManagerTests {
         authManager.checkUserState()
 
         #expect(authManager.isLoggedIn == false)
-        #expect(authManager.authState == .login)
+        #expect(authManager.authStateSubject.value == .login)
     }
 
     @available(iOS 16.0, *)
@@ -67,7 +66,7 @@ struct AuthManagerTests {
 
         try await Task.sleep(for: .milliseconds(200))
 
-        #expect(authManager.authState == .confirmCode(username: "test@mail.com"))
+        #expect(authManager.authStateSubject.value == .confirmCode(username: "test@mail.com"))
     }
 
     @available(iOS 16.0, *)
@@ -78,7 +77,7 @@ struct AuthManagerTests {
 
         try await Task.sleep(for: .milliseconds(200))
 
-        #expect(authManager.errorMessage != nil)
+        #expect(authManager.errorSubject != nil)
     }
 
     @Test
@@ -87,7 +86,7 @@ struct AuthManagerTests {
 
         authManager.confirmSignUp(username: "test@mail.com", confirmationCode: "123456")
 
-        #expect(authManager.authState == .login)
+        #expect(authManager.authStateSubject.value == .login)
     }
 
     @available(iOS 16.0, *)
@@ -98,7 +97,7 @@ struct AuthManagerTests {
 
         try await Task.sleep(for: .milliseconds(200))
 
-        #expect(authManager.errorMessage != nil)
+        #expect(authManager.errorSubject != nil)
     }
 
     @available(iOS 16.0, *)
@@ -113,7 +112,6 @@ struct AuthManagerTests {
         #expect(authManager.isLoggedIn == true)
     }
 
-
     @available(iOS 16.0, *)
     @Test
     func testSignIn_Failure() async throws {
@@ -122,7 +120,7 @@ struct AuthManagerTests {
 
         try await Task.sleep(for: .milliseconds(200))
 
-        #expect(authManager.errorMessage != nil)
+        #expect(authManager.errorSubject != nil)
     }
 
     @Test
@@ -131,7 +129,7 @@ struct AuthManagerTests {
         authManager.signOut()
 
         #expect(authManager.isLoggedIn == false)
-        #expect(authManager.authState == .login)
+        #expect(authManager.authStateSubject.value == .login)
     }
 
     @available(iOS 16.0, *)
@@ -142,17 +140,24 @@ struct AuthManagerTests {
 
         try await Task.sleep(for: .milliseconds(200))
 
-        #expect(authManager.errorMessage != nil)
+        #expect(authManager.errorSubject != nil)
     }
 
     @available(iOS 16.0, *)
     @Test
     func testHandleError_AWSError() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         let awsError = AWSMobileClientError.unknown(message: "AWS error occurred")
 
         authManager.handleError(.awsError(awsError))
 
-        #expect(authManager.errorMessage == awsError.stringMessage)
+        #expect(receivedError == awsError.stringMessage)
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
@@ -181,6 +186,5 @@ struct AuthManagerTests {
         try await Task.sleep(for: .milliseconds(200))
 
         #expect(mockTokenHandler.token == nil)
-
     }
 }

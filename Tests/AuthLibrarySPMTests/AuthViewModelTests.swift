@@ -1,9 +1,8 @@
 //
 //  AuthViewModelTests.swift
-//  AuthenticationLibrary_Tests
+//  AuthLibrarySPM
 //
 //  Created by Dionicio Cruz Velázquez on 2/5/25.
-//  Copyright © 2025 CocoaPods. All rights reserved.
 //
 
 import Testing
@@ -22,13 +21,19 @@ struct AuthViewModelTests {
 
     @Test
     func testAuthStateChanges() {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
         // Given
-        authManager.authState = .login
+        authManager.authStateSubject.send(.login)
 
         // When
         viewModel.clearErrorMessage()
 
         // Then
-        #expect(authManager.errorMessage == nil)
+        #expect(receivedError == nil)
+
+        _ = cancellable
     }
 }

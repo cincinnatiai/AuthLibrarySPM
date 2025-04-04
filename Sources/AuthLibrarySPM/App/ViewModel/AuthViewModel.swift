@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-@available(iOS 14.0, *)
+@available(iOS 13.0, *)
 public class AuthViewModel: ObservableObject {
 
     @Published public var showError: Bool = false
@@ -32,7 +32,10 @@ public class AuthViewModel: ObservableObject {
     private func observeAuthManager() {
         authManager.authStatePublisher
             .receive(on: DispatchQueue.main)
-            .assign(to: &$authState)
+            .sink { [weak self] authState in
+                self?.authState = authState
+            }
+            .store(in: &cancellables)
 
         authManager.errorPublisher
             .receive(on: DispatchQueue.main)
@@ -44,7 +47,7 @@ public class AuthViewModel: ObservableObject {
     }
 
     public func handleActionResult() {
-        showError = self.errorMessage != nil
+        showError = (self.errorMessage != nil)
     }
 
     open func showSignUp() {

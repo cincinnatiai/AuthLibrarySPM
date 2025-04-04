@@ -1,7 +1,9 @@
-//import Testing
-//@testable import AuthLibrarySPM
-//import AWSMobileClientXCF
-//import XCTest
+//
+//  AuthenticationLibraryTests.swift
+//  AuthLibrarySPM
+//
+//  Created by Dionicio Cruz Velázquez on 2/7/25.
+//
 
 import Testing
 @testable import AuthLibrarySPM
@@ -22,43 +24,68 @@ struct AuthenticationLibraryTests {
 
     @Test
     func testInitialState() {
-        authManager.errorMessage = nil
+        var receivedError: String?
 
-        #expect(authManager.authState == .login)
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
+        authManager.errorSubject.send(nil)
+
+        #expect(authManager.authStateSubject.value == .login)
         #expect(authManager.isLoggedIn == false)
-        #expect(authManager.errorMessage == nil)
+        #expect(receivedError == nil)
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testCheckUserStateLoggedIn() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         mockAuthService.checkUserStateResult = .success(.signedIn)
         authManager.checkUserState()
 
         try await Task.sleep(for: .milliseconds(200))
 
-        #expect(authManager.authState == .session(user: "Session initiated"))
+        #expect(authManager.authStateSubject.value == .session(user: "Session initiated"))
         #expect(authManager.isLoggedIn == true)
-        #expect(authManager.errorMessage == nil)
+        #expect(receivedError == nil)
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testCheckUserStateLoggedOut() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
 
         mockAuthService.checkUserStateResult = .success(.signedOut)
         authManager.checkUserState()
 
         try await Task.sleep(for: .milliseconds(200))
 
-        #expect(authManager.authState == .login)
+        #expect(authManager.authStateSubject.value == .login)
         #expect(authManager.isLoggedIn == false)
-        #expect(authManager.errorMessage == nil)
+        #expect(receivedError == nil)
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testSignUpSuccess() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         let attributes = ["email": "testuser@mail.com", "name": "testuser@mail.com"]
 
         mockAuthService.signUpResult = .success(.unconfirmed)
@@ -66,47 +93,75 @@ struct AuthenticationLibraryTests {
 
         try await Task.sleep(for: .milliseconds(100))
 
-        #expect(authManager.authState == .confirmCode(username: "testuser@mail.com"))
-        #expect(authManager.errorMessage == nil)
+        #expect(authManager.authStateSubject.value == .confirmCode(username: "testuser@mail.com"))
+        #expect(receivedError == nil)
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testSignUpFailure() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         mockAuthService.signUpResult = .failure(.awsError(AWSMobileClientError.usernameExists(message: "Username already exists")))
         authManager.signUp(username: "testuser", password: "password", attributes: [:])
 
         try await Task.sleep(for: .milliseconds(100))
 
-        #expect(authManager.errorMessage == "Username already exists")
+        #expect(receivedError == "Username already exists")
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testConfirmSignUpSuccess() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         mockAuthService.confirmSignUpResult = .success(())
         authManager.confirmSignUp(username: "testuser", confirmationCode: "123456")
 
         try await Task.sleep(for: .milliseconds(100))
 
-        #expect(authManager.authState == .login)
-        #expect(authManager.errorMessage == nil)
+        #expect(authManager.authStateSubject.value == .login)
+        #expect(receivedError == nil)
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testConfirmSignUpFailure() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         mockAuthService.confirmSignUpResult = .failure(.awsError(AWSMobileClientError.invalidParameter(message: "Invalid code")))
         authManager.confirmSignUp(username: "testuser", confirmationCode: "123456")
 
         try await Task.sleep(for: .milliseconds(100))
 
-        #expect(authManager.errorMessage == "Invalid code")
+        #expect(receivedError == "Invalid code")
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testSignInSuccess() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         mockAuthService.signInResult = .success(.signedIn)
         mockAuthService.checkUserStateResult = .success(.signedIn)
         mockAuthService.getTokenResult = .success("Mock-Token")
@@ -116,42 +171,65 @@ struct AuthenticationLibraryTests {
         try await Task.sleep(for: .milliseconds(100))
 
         #expect(authManager.isLoggedIn == true)
-        #expect(authManager.authState == .session(user: "Session initiated"))
-        #expect(authManager.errorMessage == nil)
+        #expect(authManager.authStateSubject.value == .session(user: "Session initiated"))
+        #expect(receivedError == nil)
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testSignInFailure() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         mockAuthService.signInResult = .failure(.awsError(AWSMobileClientError.invalidParameter(message: "Invalid credentials")))
         authManager.signIn(username: "testuser", password: "password")
 
         try await Task.sleep(for: .milliseconds(100))
 
-        #expect(authManager.errorMessage == "Invalid credentials")
+        #expect(receivedError == "Invalid credentials")
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testSignOutSuccess() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         mockAuthService.signOutResult = .success(())
         authManager.signOut()
 
         try await Task.sleep(for: .milliseconds(100))
 
         #expect(authManager.isLoggedIn == false)
-        #expect(authManager.authState == .login)
-        #expect(authManager.errorMessage == nil)
+        #expect(authManager.authStateSubject.value == .login)
+        #expect(receivedError == nil)
+
+        _ = cancellable
     }
 
     @available(iOS 16.0, *)
     @Test
     func testSignOutFailure() async throws {
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         mockAuthService.signOutResult = .failure(.awsError(AWSMobileClientError.badRequest(message: "Network error")))
         authManager.signOut()
 
         try await Task.sleep(for: .milliseconds(100))
 
-        #expect(authManager.errorMessage == "Network error")
+        #expect(receivedError == "Network error")
+
+        _ = cancellable
     }
 }

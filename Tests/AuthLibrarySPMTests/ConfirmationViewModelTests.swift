@@ -1,9 +1,8 @@
 //
 //  ConfirmationViewModelTests.swift
-//  AuthenticationLibrary_Tests
+//  AuthLibrarySPM
 //
 //  Created by Dionicio Cruz Velázquez on 2/6/25.
-//  Copyright © 2025 CocoaPods. All rights reserved.
 //
 
 import Testing
@@ -14,7 +13,7 @@ import Testing
 struct ConfirmationViewModelTests {
     var authManager: MockAuthManager
     var viewModel: ConfirmationViewModel
-    
+
     init() {
         self.authManager = MockAuthManager()
         self.viewModel = ConfirmationViewModel(authManager: authManager, username: "example@mail.com")
@@ -30,12 +29,17 @@ struct ConfirmationViewModelTests {
 
         // Then
         #expect(authManager.confirmSignUpCalled == true)
-        #expect(authManager.authState == .session(user: "example@mail.com"))
+        #expect(authManager.authStateSubject.value == .session(user: "example@mail.com"))
     }
 
     @Test
     func testConfirmSignUpFail() {
         // Given
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         viewModel.confirmationCode = "456"
 
         // When
@@ -43,7 +47,9 @@ struct ConfirmationViewModelTests {
 
         // Then
         #expect(authManager.confirmSignUpCalled == true)
-        #expect(authManager.authState == .confirmCode(username: "example@mail.com"))
-        #expect(authManager.errorMessage == "Invalid confirmation code")
+        #expect(authManager.authStateSubject.value == .confirmCode(username: "example@mail.com"))
+        #expect(receivedError == "Invalid confirmation code")
+
+        _ = cancellable
     }
 }

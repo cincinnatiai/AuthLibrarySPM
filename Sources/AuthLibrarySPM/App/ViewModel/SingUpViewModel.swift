@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-@available(iOS 14.0, *)
+@available(iOS 13.0, *)
 public class SignUpViewModel: AuthViewModel {
     @Published public var email: String = ""
     @Published public var password: String = ""

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-@available(iOS 14.0, *)
+@available(iOS 13.0, *)
 @MainActor
 public class ConfirmationViewModel: AuthViewModel {
     @Published public var confirmationCode: String = ""

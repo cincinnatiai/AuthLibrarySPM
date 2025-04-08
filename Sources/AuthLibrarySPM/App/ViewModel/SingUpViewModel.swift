@@ -27,8 +27,8 @@ public class SignUpViewModel: AuthViewModel {
             return
         }
 
-        keychain.set(password, key: "password")
-        keychain.set(email, key: "email")
+        keychain.set(password, key: CredentialsKeys.password.rawValue)
+        keychain.set(email, key: CredentialsKeys.email.rawValue)
         
         let attributes = ["email": email, "name": email]
         authManager.signUp(username: email, password: password, attributes: attributes)
@@ -42,4 +42,9 @@ public class SignUpViewModel: AuthViewModel {
     public override func showLogin() {
         super.showLogin()
     }
+}
+
+enum CredentialsKeys: String {
+    case email = "email"
+    case password = "password"
 }

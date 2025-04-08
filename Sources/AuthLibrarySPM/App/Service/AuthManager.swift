@@ -18,20 +18,17 @@ open class AuthManager: ObservableObject {
     public private(set) var authStateSubject = CurrentValueSubject<AuthState, Never>(.login)
     public private(set) var errorSubject = PassthroughSubject<String?, Never>()
 
-    public var authStatePublisher: AnyPublisher<AuthState, Never> {
-        authStateSubject.eraseToAnyPublisher()
-    }
-
-    public var errorPublisher: AnyPublisher<String?, Never> {
-        errorSubject.eraseToAnyPublisher()
-    }
+    public var authStatePublisher: AnyPublisher<AuthState, Never> { authStateSubject.eraseToAnyPublisher() }
+    public var errorPublisher: AnyPublisher<String?, Never> { errorSubject.eraseToAnyPublisher() }
 
     private let authService: AuthServiceProtocol
     private var tokenProtocol: TokenManagerProtocol?
+    private let errorMapper: ErrorMapperProtocol
     private var cancellables: Set<AnyCancellable> = []
 
-    public init(authService: AuthServiceProtocol = AuthService()) {
+    public init(authService: AuthServiceProtocol = AuthService(), errorMapper: ErrorMapperProtocol = ErrorMapper()) {
         self.authService = authService
+        self.errorMapper = errorMapper
         checkUserState()
     }
 
@@ -43,6 +40,7 @@ open class AuthManager: ObservableObject {
         authStateSubject.send(.login)
     }
 
+    // TODO: Move to AuthService
     open func initializeAWS() {
         AWSMobileClient.default().initialize { (userState, error) in
             if let error = error {
@@ -55,11 +53,11 @@ open class AuthManager: ObservableObject {
 
     open func checkUserState() {
         handlePublisher(authService.checkUserState()) { [weak self] userState in
-            guard let self = self else { return }
+            guard let self else { return }
             if case .confirmCode = authStateSubject.value { return }
-            self.isLoggedIn = (userState == .signedIn)
-            self.authStateSubject.value = self.isLoggedIn ? .session(user: "Session initiated") : .login
-            self.errorSubject.send(nil)
+            isLoggedIn = (userState == .signedIn)
+            authStateSubject.value = isLoggedIn ? .session(user: "Session initiated") : .login
+            errorSubject.send(nil)
         }
     }
 
@@ -124,7 +122,7 @@ extension AuthManager {
         publisher
             .mapError { error -> AuthError in
                 if case let .awsError(awsError) = error {
-                    return self.filteredAuthError(awsError)
+                    return self.errorMapper.map(awsError)
                 }
                 return .unknown
             }
@@ -135,31 +133,6 @@ extension AuthManager {
                 }
             }, receiveValue: { success($0) })
             .store(in: &cancellables)
-    }
-
-    private func filteredAuthError(_ error: AWSMobileClientError) -> AuthError {
-        switch error {
-        case .invalidPassword,
-                .mfaMethodNotFound,
-                .notAuthorized,
-                .passwordResetRequired,
-                .userNotConfirmed,
-                .userNotFound,
-                .usernameExists,
-                .notSignedIn,
-                .tooManyFailedAttempts,
-                .tooManyRequests,
-                .unableToSignIn,
-                .aliasExists,
-                .expiredCode,
-                .invalidState,
-                .badRequest,
-                .unknown,
-                .invalidParameter:
-            return .awsError(error)
-        default:
-            return .unknown
-        }
     }
 }
 
@@ -178,3 +151,4 @@ extension AuthError {
         }
     }
 }
+

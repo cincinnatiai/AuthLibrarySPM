@@ -10,10 +10,12 @@ public struct AuthApp<SessionViewType: View, LoginViewType: View>: View {
     private let sessionViewProvider: (String) -> SessionViewType
     private let loginViewProvider: (LoginViewModel) -> LoginViewType
 
-    public init(authManager: AuthManager, authviewModel: AuthViewModel,
-                @ViewBuilder loginView: @escaping (LoginViewModel) -> LoginViewType = { viewModel in  LoginView(viewModel: viewModel)},
-                @ViewBuilder sessionView: @escaping (String) -> SessionViewType) {
-
+    public init(
+        authManager: AuthManager,
+        authviewModel: AuthViewModel,
+        @ViewBuilder loginView: @escaping (LoginViewModel) -> LoginViewType = { viewModel in  LoginView(viewModel: viewModel)},
+        @ViewBuilder sessionView: @escaping (String) -> SessionViewType
+    ) {
         self.authManager = authManager
         self.authViewModel = authviewModel
         self.sessionViewProvider = sessionView

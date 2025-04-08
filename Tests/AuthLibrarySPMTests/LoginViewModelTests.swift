@@ -59,8 +59,6 @@ struct LoginViewModelTests {
         // When
         await viewModel.login()
         await Task.yield()
-        print("viewModel.errorMessage =", viewModel.errorMessage as Any)
-        print("viewModel.showError =", viewModel.showError)
 
         // Then
         #expect(authManager.signInCalled == true)

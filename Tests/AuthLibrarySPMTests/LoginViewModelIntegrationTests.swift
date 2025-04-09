@@ -26,37 +26,21 @@ struct LoginViewModelIntegrationTests {
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             fatalError("awsconfiguration.json not found or invalid")
         }
-        
+
         AWSInfo.configureDefaultAWSInfo(json)
-        
+
         await withCheckedContinuation { continuation in
             AWSMobileClient.default().initialize { _, _ in continuation.resume() }
         }
 
         authService = AuthService()
-        authManager = AuthManager(authService: authService)
         mockTokenHandler = MockTokenHandler()
         keychain = MockKeychainValues()
 
+        authManager = AuthManager(authService: authService)
+        authManager.setTokenProtocol(mockTokenHandler)
+
         viewModel = LoginViewModel(authManager: authManager, keychain: keychain, preferences: MockFaceIDPreferences())
-    }
-
-    func resetAndInitializeAWS() async {
-        await withCheckedContinuation { continuation in
-            AWSMobileClient.default().signOut(
-                options: SignOutOptions(signOutGlobally: true, invalidateTokens: true)
-            ) { _ in continuation.resume() }
-        }
-
-        try? await Task.sleep(nanoseconds: 500_000_000)
-
-        await withCheckedContinuation { continuation in
-            AWSMobileClient.default().initialize { _, _ in
-                continuation.resume()
-            }
-        }
-
-        authManager.initializeAWS()
     }
 
     @available(iOS 16.0, *)
@@ -68,46 +52,28 @@ struct LoginViewModelIntegrationTests {
         viewModel.email = "your-email@mail.com"
         viewModel.password = "your-password"
         viewModel.isFaceIDEnabled = false
-        authManager.setTokenProtocol(mockTokenHandler)
 
-        // When
-        let authState = await withCheckedContinuation { continuation in
-            var cancellable: AnyCancellable?
-            cancellable = authManager.authStatePublisher
-                .sink { state in
-                    switch state {
-                    case .session(let user) where user == "Session initiated":
-                        Task { @MainActor in
-                            continuation.resume(returning: state)
-                            _ = cancellable
-                        }
-                    case .login:
-                        Task { @MainActor in
-                            continuation.resume(returning: .login)
-                            _ = cancellable
-                        }
-                    default:
-                        break
-                    }
-                }
+        var receivedState: AuthState? = nil
+        let cancellable = authManager.authStatePublisher
+            .sink { receivedState = $0 }
 
-            authManager.signIn(username: viewModel.email, password: viewModel.password)
-        }
+        authManager.signIn(username: viewModel.email, password: viewModel.password)
 
-        // Then
-        if case .session(let user) = authState {
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+
+        if case .session(let user)? = receivedState {
             #expect(user == "Session initiated")
             #expect(authManager.isLoggedIn == true)
         } else {
-            return
+            #expect(Bool(false), "Unexpected auth state: \(String(describing: receivedState))")
         }
+
+        _ = cancellable
     }
 
     @available(iOS 13.0, *)
     @Test
     func testFailedLogin() async throws {
-        await resetAndInitializeAWS()
-
         viewModel.email = "wrong@example.com"
         viewModel.password = "wrong_password"
         viewModel.isFaceIDEnabled = false
@@ -123,7 +89,7 @@ struct LoginViewModelIntegrationTests {
                 }
 
             authManager.signIn(username: viewModel.email, password: viewModel.password)
-            
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 continuation.resume(returning: "timeout")
             }
@@ -135,7 +101,6 @@ struct LoginViewModelIntegrationTests {
     @available(iOS 16.0, *)
     @Test
     func testSignUpNavigation() async {
-        await resetAndInitializeAWS()
         viewModel.signUp()
 
         #expect(authManager.authStateSubject.value == .signUp)
@@ -144,8 +109,6 @@ struct LoginViewModelIntegrationTests {
     @available(iOS 16.0, *)
     @Test
     func testLoadCredentials() async {
-
-        await resetAndInitializeAWS()
         keychain.set("saved@example.com", key: "email")
 
         viewModel.loadCredentials()
@@ -156,7 +119,6 @@ struct LoginViewModelIntegrationTests {
     @available(iOS 16.0, *)
     @Test
     func testClearErrorMessage() async {
-        await resetAndInitializeAWS()
         var receivedError: String?
 
         let cancellable = authManager.errorPublisher

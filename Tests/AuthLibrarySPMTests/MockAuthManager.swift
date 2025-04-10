@@ -1,9 +1,8 @@
 //
 //  MockAuthManager.swift
-//  AuthenticationLibrary_Tests
+//  AuthLibrarySPM
 //
 //  Created by Dionicio Cruz Velázquez on 2/5/25.
-//  Copyright © 2025 CocoaPods. All rights reserved.
 //
 
 import AuthLibrarySPM
@@ -18,46 +17,46 @@ class MockAuthManager: AuthManager {
     var showLoginCalled = false
     var loadSessionCalled = false
     var signOutCalled = false
-    
+
     override func signIn(username: String, password: String) {
         signInCalled = true
         if username == "example@mail.com" && password == "password123_" {
-            self.authState = .session(user: username)
-            self.errorMessage = nil
+            errorSubject.send(nil)
+            authStateSubject.send(.session(user: username))
         } else {
-            self.authState = .login
-            self.errorMessage = "Invalid credentials"
+            authStateSubject.send(.login)
+            errorSubject.send("Invalid credentials")
         }
     }
-    
+
     override func signUp(username: String, password: String, attributes: [String: String]) {
         showSignUpCalled = true
         if username == "newuser@example.com" {
-            self.authState = .confirmCode(username: username)
-            self.errorMessage = nil
+            self.authStateSubject.send(.confirmCode(username: username))
+            self.errorSubject.send(nil)
         } else {
-            self.errorMessage = "User already exists"
+            self.errorSubject.send("User already exists")
         }
     }
-    
+
     override func confirmSignUp(username: String, confirmationCode: String) {
         confirmSignUpCalled = true
         if confirmationCode == "123456" {
-            self.authState = .session(user: username)
-            self.errorMessage = nil
+            self.authStateSubject.send(.session(user: username))
+            self.errorSubject.send(nil)
         } else {
-            self.authState = .confirmCode(username: username)
-            self.errorMessage = "Invalid confirmation code"
+            self.authStateSubject.send(.confirmCode(username: username))
+            self.errorSubject.send("Invalid confirmation code")
         }
     }
-    
+
     override func showSignUp() {
         showSignUpCalled = true
-        self.authState = .signUp
+        self.authStateSubject.send(.signUp)
     }
-    
+
     override func signOut() {
         signOutCalled = true
-        self.authState = .login
+        self.authStateSubject.send(.login)
     }
 }

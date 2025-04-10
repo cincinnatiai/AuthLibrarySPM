@@ -1,11 +1,11 @@
 //
 //  MockAuthService.swift
-//  AuthenticationLibrary_Tests
+//  AuthLibrarySPM
 //
 //  Created by Dionicio Cruz Velázquez on 2/5/25.
-//  Copyright © 2025 CocoaPods. All rights reserved.
 //
 //
+
 import Testing
 @testable import AuthLibrarySPM
 import AWSMobileClientXCF

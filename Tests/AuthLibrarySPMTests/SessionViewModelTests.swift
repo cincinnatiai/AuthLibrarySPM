@@ -24,6 +24,6 @@ struct SessionViewModelTests {
     func testLogout() {
         viewModel.logout()
         #expect(authManager.signOutCalled == true)
-        #expect(authManager.authState == .login)
+        #expect(authManager.authStateSubject.value == .login)
     }
 }

@@ -1,9 +1,8 @@
 //
 //  SignUpViewModelTests.swift
-//  AuthenticationLibrary_Tests
+//  AuthLibrarySPM
 //
 //  Created by Dionicio Cruz Velázquez on 2/6/25.
-//  Copyright © 2025 CocoaPods. All rights reserved.
 //
 
 import Testing
@@ -32,12 +31,17 @@ struct SignUpViewModelTests {
 
         // Then
         #expect(authManager.showSignUpCalled == true)
-        #expect(authManager.authState == .confirmCode(username: "newuser@example.com"))
+        #expect(authManager.authStateSubject.value == .confirmCode(username: "newuser@example.com"))
     }
 
     @Test
     func testSignUpFailureDueToExistingUser() {
         // Given
+        var receivedError: String?
+
+        let cancellable = authManager.errorPublisher
+            .sink { receivedError = $0 }
+
         viewModel.email = "existinguser@example.com"
         viewModel.password = "password123"
         viewModel.confirmPassword = "password123"
@@ -47,8 +51,10 @@ struct SignUpViewModelTests {
 
         // Then
         #expect(authManager.showSignUpCalled == true)
-        #expect(authManager.authState == .login)
-        #expect(authManager.errorMessage == "User already exists")
+        #expect(authManager.authStateSubject.value == .login)
+        #expect(receivedError == "User already exists")
+
+            _ = cancellable
     }
 
     @Test
@@ -62,6 +68,6 @@ struct SignUpViewModelTests {
         viewModel.signUp()
 
         // Then
-        #expect(authManager.authState == .login)
+        #expect(authManager.authStateSubject.value == .login)
     }
 }

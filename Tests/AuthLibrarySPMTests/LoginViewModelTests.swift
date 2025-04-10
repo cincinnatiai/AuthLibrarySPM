@@ -1,9 +1,8 @@
 //
-//  LoginViewModelTests2.swift
-//  AuthenticationLibrary_Tests
+//  LoginViewModelTests.swift
+//  AuthLibrarySPM
 //
 //  Created by Dionicio Cruz Velázquez on 2/6/25.
-//  Copyright © 2025 CocoaPods. All rights reserved.
 //
 
 import Testing
@@ -39,24 +38,35 @@ struct LoginViewModelTests {
 
         // Then
         #expect(authManager.signInCalled == true)
-        #expect(authManager.authState == .session(user: "example@mail.com"))
+        #expect(authManager.authStateSubject.value == .session(user: "example@mail.com"))
         #expect(viewModel.showError == false)
     }
 
     @Test
     func testLoginFail() async {
+        var receivedError: String?
+
+        let cancellable = viewModel.$errorMessage
+            .dropFirst()
+            .sink { error in
+                receivedError = error
+            }
+
         // Given
         viewModel.email = "Example@example.com"
         viewModel.password = "password123/"
 
         // When
         await viewModel.login()
+        await Task.yield()
 
         // Then
         #expect(authManager.signInCalled == true)
         #expect(viewModel.showError == true)
-        #expect(authManager.authState == .login)
-        #expect(authManager.errorMessage == "Invalid credentials")
+        #expect(authManager.authStateSubject.value == .login)
+        #expect(receivedError == "Invalid credentials")
+
+        _ = cancellable
     }
 
     @Test
@@ -74,7 +84,7 @@ struct LoginViewModelTests {
 
         // Then
         #expect(authManager.signInCalled == true)
-        #expect(authManager.authState == .session(user: "example@mail.com"))
+        #expect(authManager.authStateSubject.value == .session(user: "example@mail.com"))
         #expect(viewModel.showError == false)
     }
 
@@ -164,7 +174,6 @@ struct LoginViewModelTests {
         #expect(viewModel.authenticationError == "Face ID permission denied")
         #expect(viewModel.isFaceIDEnabled == false)
     }
-
 
     @Test
     func testShowSignUp() {

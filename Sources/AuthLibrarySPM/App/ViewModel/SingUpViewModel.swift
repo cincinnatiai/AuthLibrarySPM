@@ -8,39 +8,43 @@
 import SwiftUI
 
 @available(iOS 13.0, *)
-@MainActor
 public class SignUpViewModel: AuthViewModel {
     @Published public var email: String = ""
     @Published public var password: String = ""
     @Published public var confirmPassword: String = ""
     @Published public var showConfirmationCodeView: Bool = false
-    
+
     private let keychain = KeychainManager()
-    
+
     override public init(authManager: AuthManager) {
         super.init(authManager: authManager)
     }
-    
+
     public func signUp() {
         guard !email.isEmpty, !password.isEmpty, password == confirmPassword else {
-            authManager.errorMessage = "Please enter a valid email and matching passwords."
+            self.errorMessage = "Please enter a valid email and matching passwords."
             handleActionResult()
             return
         }
-        
-        keychain.set(password, key: "password")
-        keychain.set(email, key: "email")
+
+        keychain.set(password, key: CredentialsKeys.password.rawValue)
+        keychain.set(email, key: CredentialsKeys.email.rawValue)
         
         let attributes = ["email": email, "name": email]
         authManager.signUp(username: email, password: password, attributes: attributes)
         handleActionResult()
-        
-        if authManager.errorMessage == nil {
+
+        if self.errorMessage == nil {
             showConfirmationCodeView = true
         }
     }
-    
-    func showLogin() {
-        authManager.showLogin()
+
+    public override func showLogin() {
+        super.showLogin()
     }
+}
+
+enum CredentialsKeys: String {
+    case email = "email"
+    case password = "password"
 }

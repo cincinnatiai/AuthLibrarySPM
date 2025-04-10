@@ -82,7 +82,7 @@ public struct LoginView: BaseLoginView {
     
     public var errorMessageLabel: AnyView {
         AnyView (
-            viewModel.authManager.errorTextView
+            viewModel.errorTextView
         )
     }
     

@@ -8,7 +8,6 @@
 import SwiftUI
 
 @available(iOS 13.0, *)
-@MainActor
 public class SessionViewModel: AuthViewModel {
     @Published public var user: String
 

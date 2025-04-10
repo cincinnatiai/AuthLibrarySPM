@@ -10,11 +10,11 @@ import SwiftUI
 @available(iOS 14.0, *)
 public struct ConfirmationView: View {
     @StateObject private var viewModel: ConfirmationViewModel
-    
+
     init(viewModel: ConfirmationViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
-    
+
     public var body: some View {
         VStack {
             Text("Username: \(viewModel.username)")
@@ -24,8 +24,8 @@ public struct ConfirmationView: View {
                 viewModel.confirmSignUp()
             })
             .buttonStyle()
-            
-            viewModel.authManager.errorTextView
+
+            viewModel.errorTextView
         }
         .padding()
         .padding(.horizontal, 15)

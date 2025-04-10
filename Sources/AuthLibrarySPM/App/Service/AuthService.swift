@@ -42,7 +42,7 @@ public class AuthService: AuthServiceProtocol {
         execute(
             operation: { completion in
                 self.awsMobileClient.signOut { error in
-                    completion(nil, error)
+                    completion((), error)
                 }
             },
             transform: { (_: Void) in () }
@@ -72,8 +72,12 @@ private func execute<T, R>(
 ) -> AnyPublisher<T, AuthError> {
     Future<T, AuthError> { promise in
         operation { result, error in
-            if let error = error as? AWSMobileClientError {
-                promise(.failure(.awsError(error)))
+            if let error = error {
+                if let awsError = error as? AWSMobileClientError {
+                    promise(.failure(.awsError(awsError)))
+                } else {
+                    promise(.failure(.unknown))
+                }
             } else if let result = result, let transformed = transform(result) {
                 promise(.success(transformed))
             } else {

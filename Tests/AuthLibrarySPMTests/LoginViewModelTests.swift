@@ -116,7 +116,7 @@ struct LoginViewModelTests {
         await viewModel.authenticateAndLogin()
 
         // Then
-        #expect(viewModel.authenticationError == "Face ID authentication failed: Face ID permission denied")
+        #expect(viewModel.errorMessage == "Face ID authentication failed: Face ID permission denied")
         #expect(authManager.signInCalled == false)
     }
 
@@ -131,7 +131,7 @@ struct LoginViewModelTests {
         await viewModel.authenticateAndLogin()
 
         // Then
-        #expect(viewModel.authenticationError == "No saved credentials found.")
+        #expect(viewModel.errorMessage == "No saved credentials found.")
         #expect(authManager.signInCalled == false)
     }
 
@@ -157,7 +157,7 @@ struct LoginViewModelTests {
         await viewModel.toggleFaceID(true)
 
         // Then
-        #expect(viewModel.authenticationError == "Too many failed attempts. Try again later or use a password.")
+        #expect(viewModel.errorMessage == "Too many failed attempts. Try again later or use a password.")
         #expect(viewModel.isFaceIDEnabled == false)
     }
 
@@ -171,7 +171,7 @@ struct LoginViewModelTests {
         await viewModel.toggleFaceID(true)
 
         // Then
-        #expect(viewModel.authenticationError == "Face ID permission denied")
+        #expect(viewModel.errorMessage == "Face ID permission denied")
         #expect(viewModel.isFaceIDEnabled == false)
     }
 

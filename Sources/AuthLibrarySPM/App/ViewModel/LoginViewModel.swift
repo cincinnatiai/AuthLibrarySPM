@@ -5,6 +5,7 @@
 //  Created by Dionicio Cruz Velázquez on 2/5/25.
 //
 
+import Combine
 import SwiftUI
 
 @available(iOS 13.0, *)
@@ -12,13 +13,14 @@ import SwiftUI
 public class LoginViewModel: AuthViewModel {
     @Published public var email: String = ""
     @Published public var password: String = ""
-    @Published public var authenticationError: String?
     @Published private var isFaceIDInProgress = false
     @Published public var isFaceIDEnabled: Bool { didSet { preferences.isFaceIDEnabled = isFaceIDEnabled } }
 
     private let faceIDAuthenticator: FaceIDAuthenticator
     private let keychain: KeychainProtocol
     private var preferences: FaceIDPreferencesProtocol
+
+    private var cancellables = Set<AnyCancellable>()
 
     public init(
         authManager: AuthManager,
@@ -36,13 +38,19 @@ public class LoginViewModel: AuthViewModel {
     }
 
     public func login() async {
-        await isFaceIDEnabled ? authenticateAndLogin() : manualLogin()
+        if !email.isEmpty && !password.isEmpty {
+            manualLogin()
+        } else if isFaceIDEnabled {
+            await authenticateAndLogin()
+        } else {
+            errorMessage = "Please enter email and password."
+        }
     }
 
     private func manualLogin() {
+        clearErrorMessage()
+        observeAuthEvents()
         authManager.signIn(username: email, password: password)
-        handleActionResult()
-        keychain.set(email, key: "email")
     }
 
     public func tryAutoLogin() async {
@@ -57,19 +65,21 @@ public class LoginViewModel: AuthViewModel {
 
         do {
             guard try await faceIDAuthenticator.authenticate() else { return }
+
             guard let credentials = fetchStoredCredentials() else {
-                authenticationError = "No saved credentials found."
+                handleAuthenticationError("No saved credentials found.")
                 return
             }
+
             await login(with: credentials)
         } catch {
-            authenticationError = error.localizedDescription
+            handleAuthenticationError(error.localizedDescription)
         }
     }
 
     private func fetchStoredCredentials() -> (email: String, password: String)? {
         guard let email = keychain.get(key: "email"),
-              let password = keychain.get(key: "password") else { return nil }
+              let password = keychain.get(key: "password"), !email.isEmpty, !password.isEmpty else { return nil }
         return (email, password)
     }
 
@@ -94,10 +104,10 @@ public class LoginViewModel: AuthViewModel {
             preferences.hasLoggedOut = false
             await tryAutoLogin()
         } catch let error as FaceIdError {
-            authenticationError = error.localizedDescription
+            errorMessage = error.localizedDescription
             isFaceIDEnabled = false
         } catch {
-            authenticationError = "Face ID permission denied"
+            errorMessage = "Face ID permission denied"
             isFaceIDEnabled = false
         }
     }
@@ -107,10 +117,39 @@ public class LoginViewModel: AuthViewModel {
     }
 
     public func loadCredentials() {
-        email = keychain.get(key: "email") ?? ""
+        email = keychain.get(key: CredentialsKeys.email.rawValue) ?? ""
+    }
+
+    private func saveCredentials() {
+        keychain.set(email, key: CredentialsKeys.email.rawValue)
+        keychain.set(password, key: CredentialsKeys.password.rawValue)
     }
 
     override public func clearErrorMessage() {
         super.clearErrorMessage()
+    }
+    
+    private func handleAuthenticationError(_ message: String) {
+            self.errorMessage = message
+            self.isFaceIDInProgress = false
+    }
+
+    private func observeAuthEvents() {
+        authManager.errorPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                guard let error else { return }
+                self?.errorMessage = error
+            }
+            .store(in: &cancellables)
+
+        authManager.authStatePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                if case .session = state {
+                    self?.saveCredentials()
+                }
+            }
+            .store(in: &cancellables)
     }
 }

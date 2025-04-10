@@ -46,7 +46,6 @@ struct LoginViewModelIntegrationTests {
     @available(iOS 16.0, *)
     @Test
     func testSuccessfulLogin() async throws {
-        await resetAndInitializeAWS()
 
         // Given (Provide an actual mail and password)
         viewModel.email = "your-email@mail.com"

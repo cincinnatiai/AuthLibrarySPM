@@ -17,4 +17,7 @@ public protocol AuthServiceProtocol {
     func signOut() -> AnyPublisher<Void, AuthError>
     func checkUserState() -> AnyPublisher<UserState, AuthError>
     func getTokenId() -> AnyPublisher<String, AuthError>
+    func getRefreshToken() -> AnyPublisher<String, AuthError>
+    func getAccessToken() -> AnyPublisher<String, AuthError>
+    func refreshTokens() -> AnyPublisher<(idToken: String, accessToken: String), AuthError>
 }

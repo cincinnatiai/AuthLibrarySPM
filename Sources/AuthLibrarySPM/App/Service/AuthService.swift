@@ -55,6 +55,31 @@ public class AuthService: AuthServiceProtocol {
         )
     }
 
+    public func getRefreshToken() -> AnyPublisher<String, AuthError> {
+        execute(operation: { self.awsMobileClient.getTokens ($0) },
+                transform: { tokens in tokens?.refreshToken?.tokenString }
+        )
+    }
+
+    public func getAccessToken() -> AnyPublisher<String, AuthError> {
+        execute(operation: { self.awsMobileClient.getTokens($0) },
+                transform: { tokens in tokens?.accessToken?.tokenString }
+        )
+    }
+    
+    public func refreshTokens() -> AnyPublisher<(idToken: String, accessToken: String), AuthError> {
+        return execute( operation: { completion in self.awsMobileClient.getTokens(completion) },
+            transform: { tokens in
+                guard let idToken = tokens.idToken?.tokenString,
+                      let accessToken = tokens.accessToken?.tokenString else {
+                    return nil
+                }
+                return (idToken: idToken, accessToken: accessToken)
+            }
+        )
+    }
+
+    // MARK: Check user state in the Main App
     public func checkUserState() -> AnyPublisher<UserState, AuthError> {
         Future<UserState, AuthError> { promise in
             let state = self.awsMobileClient.currentUserState

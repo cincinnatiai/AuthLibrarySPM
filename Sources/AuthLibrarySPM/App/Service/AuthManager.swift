@@ -17,6 +17,7 @@ open class AuthManager: ObservableObject {
 
     public private(set) var authStateSubject = CurrentValueSubject<AuthState, Never>(.login)
     public private(set) var errorSubject = PassthroughSubject<String?, Never>()
+    public var cancellables: Set<AnyCancellable> = []
 
     public var authStatePublisher: AnyPublisher<AuthState, Never> { authStateSubject.eraseToAnyPublisher() }
     public var errorPublisher: AnyPublisher<String?, Never> { errorSubject.eraseToAnyPublisher() }
@@ -24,7 +25,6 @@ open class AuthManager: ObservableObject {
     private let authService: AuthServiceProtocol
     private var tokenProtocol: TokenManagerProtocol?
     private let errorMapper: ErrorMapperProtocol
-    private var cancellables: Set<AnyCancellable> = []
 
     public init(authService: AuthServiceProtocol = AuthService(), errorMapper: ErrorMapperProtocol = ErrorMapper()) {
         self.authService = authService
@@ -81,7 +81,9 @@ open class AuthManager: ObservableObject {
             if signInResult == .signedIn {
                 self?.isLoggedIn = true
                 self?.checkUserState()
-                self?.manageToken()
+                self?.manageTokenId()
+                self?.manageRefreshToken()
+                self?.manageAccessToken()
             }
         }
     }
@@ -111,11 +113,48 @@ open class AuthManager: ObservableObject {
 @available(iOS 13.0, *)
 extension AuthManager {
 
-    private func manageToken() {
+    private func manageTokenId() {
         handlePublisher(authService.getTokenId()) { [weak self] token in
             guard let self, let tokenProtocol else { return }
             tokenProtocol.manageTokenId(idToken: token)
         }
+    }
+
+    private func manageRefreshToken() {
+        handlePublisher(authService.getRefreshToken()) { [weak self] token in
+            guard let self, let tokenProtocol else { return }
+            tokenProtocol.manageRefreshToken(refreshToken: token)
+        }
+    }
+
+    private func manageAccessToken() {
+        handlePublisher(authService.getAccessToken()) { [weak self] token in
+            guard let self, let tokenProtocol else { return }
+            tokenProtocol.manageAccessToken(accessToken: token)
+        }
+    }
+
+    public func refreshTokensAndStore(completion: @escaping (Bool) -> Void) {
+        authService.refreshTokens()
+            .sink(receiveCompletion: { completionResult in
+                switch completionResult {
+                case .finished:
+                    break
+                case .failure(let error):
+                    completion(false)
+                }
+            }, receiveValue: { [weak self] newTokens in
+                guard let self, let tokenProtocol else {
+                    completion(false)
+                    return
+                }
+                tokenProtocol.clearAllTokens()
+
+                tokenProtocol.manageTokenId(idToken: newTokens.idToken)
+                tokenProtocol.manageAccessToken(accessToken: newTokens.accessToken)
+                completion(true)
+            })
+            .store(in: &cancellables)
     }
 
     private func handlePublisher<T>(_ publisher: AnyPublisher<T, AuthError>, success: @escaping (T) -> Void) {
@@ -139,6 +178,7 @@ extension AuthManager {
 public enum AuthError: Error {
     case awsError(AWSMobileClientError)
     case unknown
+    case tokenRefreshFailed
 }
 
 extension AuthError {
@@ -148,6 +188,8 @@ extension AuthError {
             return error.stringMessage
         case .unknown:
             return "An unknown error occurred."
+        case .tokenRefreshFailed:
+            return "Token Expired, please, Sign In again."
         }
     }
 }

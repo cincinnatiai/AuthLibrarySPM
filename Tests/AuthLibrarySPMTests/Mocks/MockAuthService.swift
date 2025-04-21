@@ -12,13 +12,15 @@ import AWSMobileClientXCF
 import Combine
 
 class MockAuthService: AuthServiceProtocol {
-
     var signUpResult: Result<SignUpConfirmationState, AuthError>?
     var confirmSignUpResult: Result<Void, AuthError>? = .success(())
     var signInResult: Result<SignInState, AuthError>?
     var signOutResult: Result<Void, AuthError>? = .success(())
     var checkUserStateResult: Result<UserState, AuthError>?
     var getTokenResult: Result<String,AuthError>?
+    var getRefreshTokenResult: Result<String,AuthError>?
+    var getAccessTokenResult: Result<String,AuthError>?
+    var getSetOfTokensResult: Result<(idToken: String, accessToken: String), AuthError>?
 
     func signUp(username: String, password: String, attributes: [String : String]) -> AnyPublisher<SignUpConfirmationState, AuthError> {
         Future<SignUpConfirmationState, AuthError> { promise in
@@ -76,8 +78,41 @@ class MockAuthService: AuthServiceProtocol {
     }
 
     func getTokenId() -> AnyPublisher<String, AuthError> {
-        Future<String, AuthError> { promise in
+        Future <String, AuthError> { promise in
             if let result = self.getTokenResult {
+                promise(result)
+            } else {
+                promise(.failure(.unknown))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    func getRefreshToken() -> AnyPublisher<String, AuthError> {
+        Future <String, AuthError> { promise in
+            if let result = self.getRefreshTokenResult {
+                promise(result)
+            } else {
+                promise(.failure(.unknown))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    func getAccessToken() -> AnyPublisher<String, AuthError> {
+        Future <String, AuthError> { promise in
+            if let result = self.getAccessTokenResult {
+                promise(result)
+            } else {
+                promise(.failure(.unknown))
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+
+    func refreshTokens() -> AnyPublisher<(idToken: String, accessToken: String), AuthError> {
+        Future<(idToken: String, accessToken: String), AuthError> { promise in
+            if let result = self.getSetOfTokensResult {
                 promise(result)
             } else {
                 promise(.failure(.unknown))

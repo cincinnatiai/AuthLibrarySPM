@@ -22,9 +22,10 @@ open class AuthManager: ObservableObject {
     public var authStatePublisher: AnyPublisher<AuthState, Never> { authStateSubject.eraseToAnyPublisher() }
     public var errorPublisher: AnyPublisher<String?, Never> { errorSubject.eraseToAnyPublisher() }
 
-    private let authService: AuthServiceProtocol
+    private var authService: AuthServiceProtocol
     private var tokenProtocol: TokenManagerProtocol?
-    private let errorMapper: ErrorMapperProtocol
+    private var errorMapper: ErrorMapperProtocol
+
 
     public init(authService: AuthServiceProtocol = AuthService(), errorMapper: ErrorMapperProtocol = ErrorMapper()) {
         self.authService = authService
@@ -63,36 +64,40 @@ open class AuthManager: ObservableObject {
 
     open func signUp(username: String, password: String, attributes: [String: String]) {
         handlePublisher(authService.signUp(username: username, password: password, attributes: attributes)) { [weak self] signUpResult in
+            guard let self else { return }
             if signUpResult != .confirmed {
-                self?.authStateSubject.send(.confirmCode(username: username))
+                authStateSubject.send(.confirmCode(username: username))
             }
-            self?.errorSubject.send(nil)
+            errorSubject.send(nil)
         }
     }
 
     open func confirmSignUp(username: String, confirmationCode: String) {
         handlePublisher(authService.confirmSignUp(username: username, confirmationCode: confirmationCode)) { [weak self] _ in
-            self?.showLogin()
+            guard let self else { return }
+            showLogin()
         }
     }
 
     open func signIn(username: String, password: String) {
         handlePublisher(authService.signIn(username: username, password: password)) { [weak self] signInResult in
+            guard let self else { return }
             if signInResult == .signedIn {
-                self?.isLoggedIn = true
-                self?.checkUserState()
-                self?.manageTokenId()
-                self?.manageRefreshToken()
-                self?.manageAccessToken()
+                isLoggedIn = true
+                checkUserState()
+                manageTokenId()
+                manageRefreshToken()
+                manageAccessToken()
             }
         }
     }
 
     open func signOut() {
         handlePublisher(authService.signOut()) { [weak self] in
-            self?.isLoggedIn = false
-            self?.checkUserState()
-            self?.errorSubject.send(nil)
+            guard let self else { return }
+            isLoggedIn = false
+            checkUserState()
+            errorSubject.send(nil)
         }
     }
 
@@ -167,8 +172,9 @@ extension AuthManager {
             }
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
+                guard let self else { return }
                 if case .failure(let error) = completion {
-                    self?.handleError(error)
+                    handleError(error)
                 }
             }, receiveValue: { success($0) })
             .store(in: &cancellables)

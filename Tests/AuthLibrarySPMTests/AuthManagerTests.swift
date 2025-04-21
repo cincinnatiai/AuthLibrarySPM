@@ -163,16 +163,24 @@ struct AuthManagerTests {
     @available(iOS 16.0, *)
     @Test
     func testManageToken_Success() async throws {
-        let expectedToken = "expectedToken"
+        let expectedIdToken = "id-123"
+        let expectedAccessToken = "access-123"
+        let expectedRefreshToken = "refresh-123"
 
         mockAuthService.signInResult = .success(.signedIn)
-        mockAuthService.getTokenResult = .success(expectedToken)
+        mockAuthService.getTokenResult = .success(expectedIdToken)
+        mockAuthService.getAccessTokenResult = .success(expectedAccessToken)
+        mockAuthService.getRefreshTokenResult = .success(expectedRefreshToken)
+
         authManager.setTokenProtocol(mockTokenHandler)
-        authManager.signIn(username: "test", password: "test")
+        authManager.signIn(username: "Test", password: "Test")
 
         try await Task.sleep(for: .milliseconds(200))
 
-        #expect(mockTokenHandler.token == expectedToken)
+
+        #expect(mockTokenHandler.idToken == expectedIdToken)
+        #expect(mockTokenHandler.accessToken == expectedAccessToken)
+        #expect(mockTokenHandler.refreshToken == expectedRefreshToken)
     }
 
     @available(iOS 16.0, *)
@@ -185,6 +193,6 @@ struct AuthManagerTests {
 
         try await Task.sleep(for: .milliseconds(200))
 
-        #expect(mockTokenHandler.token == nil)
+        #expect(mockTokenHandler.idToken == nil)
     }
 }

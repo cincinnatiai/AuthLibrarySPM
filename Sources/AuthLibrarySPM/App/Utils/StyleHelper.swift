@@ -30,12 +30,17 @@ public struct SecureFieldStyle: ViewModifier {
 
 @available(iOS 13.0, *)
 public struct ButtonStyle: ViewModifier {
+    private var isEnabled : Bool = true
+
+    init(isEnabled : Bool = true){
+        self.isEnabled = isEnabled
+    }
     public func body(content: Content) -> some View {
         content
             .foregroundColor(.white)
             .padding()
             .padding(.horizontal, 40)
-            .background(Color.blue)
+            .background(isEnabled ? Color.blue : Color.gray)
             .cornerRadius(8.0)
             .textContentType(.password)
             .disableAutocorrection(true)
@@ -53,8 +58,8 @@ extension View {
         self.modifier(SecureFieldStyle())
     }
 
-    public func buttonStyle() -> some View {
-        self.modifier(ButtonStyle())
+    public func buttonStyle(isEnabled: Bool = true) -> some View {
+        self.modifier(ButtonStyle(isEnabled: isEnabled))
     }
 }
 

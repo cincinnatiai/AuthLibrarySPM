@@ -46,7 +46,7 @@ struct AuthenticationLibraryTests {
         let cancellable = authManager.errorPublisher
             .sink { receivedError = $0 }
 
-        mockAuthService.checkUserStateResult = .success(.signedIn)
+        mockAuthService.setCheckUserStateResult(.success(.signedIn))
         authManager.checkUserState()
 
         try await Task.sleep(for: .milliseconds(200))
@@ -66,7 +66,7 @@ struct AuthenticationLibraryTests {
         let cancellable = authManager.errorPublisher
             .sink { receivedError = $0 }
 
-        mockAuthService.checkUserStateResult = .success(.signedOut)
+        mockAuthService.setCheckUserStateResult(.success(.signedOut))
         authManager.checkUserState()
 
         try await Task.sleep(for: .milliseconds(200))
@@ -88,7 +88,7 @@ struct AuthenticationLibraryTests {
 
         let attributes = ["email": "testuser@mail.com", "name": "testuser@mail.com"]
 
-        mockAuthService.signUpResult = .success(.unconfirmed)
+        mockAuthService.setSignUpResult(.success(.unconfirmed))
         authManager.signUp(username: "testuser@mail.com", password: "Password1234_", attributes: attributes)
 
         try await Task.sleep(for: .milliseconds(100))
@@ -107,7 +107,7 @@ struct AuthenticationLibraryTests {
         let cancellable = authManager.errorPublisher
             .sink { receivedError = $0 }
 
-        mockAuthService.signUpResult = .failure(.awsError(AWSMobileClientError.usernameExists(message: "Username already exists")))
+        mockAuthService.setSignUpResult(.failure(.awsError(AWSMobileClientError.usernameExists(message: "Username already exists"))))
         authManager.signUp(username: "testuser", password: "password", attributes: [:])
 
         try await Task.sleep(for: .milliseconds(100))
@@ -125,7 +125,7 @@ struct AuthenticationLibraryTests {
         let cancellable = authManager.errorPublisher
             .sink { receivedError = $0 }
 
-        mockAuthService.confirmSignUpResult = .success(())
+        mockAuthService.setConfirmSignUpResult(.success(()))
         authManager.confirmSignUp(username: "testuser", confirmationCode: "123456")
 
         try await Task.sleep(for: .milliseconds(100))
@@ -144,7 +144,7 @@ struct AuthenticationLibraryTests {
         let cancellable = authManager.errorPublisher
             .sink { receivedError = $0 }
 
-        mockAuthService.confirmSignUpResult = .failure(.awsError(AWSMobileClientError.invalidParameter(message: "Invalid code")))
+        mockAuthService.setConfirmSignUpResult(.failure(.awsError(AWSMobileClientError.invalidParameter(message: "Invalid code"))))
         authManager.confirmSignUp(username: "testuser", confirmationCode: "123456")
 
         try await Task.sleep(for: .milliseconds(100))
@@ -162,9 +162,10 @@ struct AuthenticationLibraryTests {
         let cancellable = authManager.errorPublisher
             .sink { receivedError = $0 }
 
-        mockAuthService.signInResult = .success(.signedIn)
-        mockAuthService.checkUserStateResult = .success(.signedIn)
-        mockAuthService.getTokenResult = .success("Mock-Token")
+        mockAuthService.setSignInResult(.success(.signedIn))
+        mockAuthService.setCheckUserStateResult(.success(.signedIn))
+        mockAuthService.setGetTokenResult(.success("Mock-Token"))
+
         authManager.setTokenProtocol(mockTokenHandler)
         authManager.signIn(username: "testuser@mail.com", password: "password123_")
 
@@ -185,7 +186,7 @@ struct AuthenticationLibraryTests {
         let cancellable = authManager.errorPublisher
             .sink { receivedError = $0 }
 
-        mockAuthService.signInResult = .failure(.awsError(AWSMobileClientError.invalidParameter(message: "Invalid credentials")))
+        mockAuthService.setSignInResult(.failure(.awsError(AWSMobileClientError.invalidParameter(message: "Invalid credentials"))))
         authManager.signIn(username: "testuser", password: "password")
 
         try await Task.sleep(for: .milliseconds(100))
@@ -203,7 +204,7 @@ struct AuthenticationLibraryTests {
         let cancellable = authManager.errorPublisher
             .sink { receivedError = $0 }
 
-        mockAuthService.signOutResult = .success(())
+        mockAuthService.setSignOutResult(.success(()))
         authManager.signOut()
 
         try await Task.sleep(for: .milliseconds(100))
@@ -223,7 +224,7 @@ struct AuthenticationLibraryTests {
         let cancellable = authManager.errorPublisher
             .sink { receivedError = $0 }
 
-        mockAuthService.signOutResult = .failure(.awsError(AWSMobileClientError.badRequest(message: "Network error")))
+        mockAuthService.setSignOutResult(.failure(.awsError(AWSMobileClientError.badRequest(message: "Network error"))))
         authManager.signOut()
 
         try await Task.sleep(for: .milliseconds(100))

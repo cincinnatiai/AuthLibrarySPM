@@ -32,4 +32,10 @@ public enum LocalizedStringKeys {
     public static let SignUpRequirementSpecialCharacter = "SignUpRequirement_SpecialCharacter".localized
     public static let SignUpRequirementPasswordMismatch = "SignUpRequirement_PasswordMismatch".localized
     public static let SignUpRequirementInvalidEmailAndPassword = "SignUpRequirement_InvalidEmailAndPassword".localized
+    // MARK: - Error Handling
+    public static let ErrorInitializeAWS = "Error_InitializeAWS".localized
+    public static let ErrorInitializeAwsState = "Error_InitializeAwsState".localized
+    public static let ErrorSignupFailed = "Error_SignupFailed".localized
+    public static let ErrorUnknownAuthError = "Error_UnknownAuthError".localized
+    public static let ErrorTokenExpiredError = "Error_TokenExpiredError".localized
 }

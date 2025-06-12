@@ -25,3 +25,9 @@
 "SignUpRequirement_SpecialCharacter" = "At least one special character";
 "SignUpRequirement_PasswordMismatch" = "Password and confirm password must match";
 "SignUpRequirement_InvalidEmailAndPassword" = "Please enter a valid email and matching passwords.";
+//MARK: Error Handling
+"Error_InitializeAWS" = "Error initializing AWSMobileClient: ";
+"Error_InitializeAwsState" = "AWSMobileClient initialized with state";
+"Error_SignupFailed" = "AWSMobileClient initialized with state";
+"Error_UnknownAuthError" = "An unknown error occurred.";
+"Error_TokenExpiredError" = "Token Expired, please, Sign In again.";

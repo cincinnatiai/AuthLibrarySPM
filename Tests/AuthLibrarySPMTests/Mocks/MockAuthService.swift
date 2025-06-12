@@ -12,15 +12,15 @@ import AWSMobileClientXCF
 import Combine
 
 class MockAuthService: AuthServiceProtocol {
-    var signUpResult: Result<SignUpConfirmationState, AuthError>?
-    var confirmSignUpResult: Result<Void, AuthError>? = .success(())
-    var signInResult: Result<SignInState, AuthError>?
-    var signOutResult: Result<Void, AuthError>? = .success(())
-    var checkUserStateResult: Result<UserState, AuthError>?
-    var getTokenResult: Result<String,AuthError>?
-    var getRefreshTokenResult: Result<String,AuthError>?
-    var getAccessTokenResult: Result<String,AuthError>?
-    var getSetOfTokensResult: Result<(idToken: String, accessToken: String), AuthError>?
+    private var signUpResult: Result<SignUpConfirmationState, AuthError>?
+    private var confirmSignUpResult: Result<Void, AuthError>? = .success(())
+    private var signInResult: Result<SignInState, AuthError>?
+    private var signOutResult: Result<Void, AuthError>? = .success(())
+    private var checkUserStateResult: Result<UserState, AuthError>?
+    private var getTokenResult: Result<String,AuthError>?
+    private var getRefreshTokenResult: Result<String,AuthError>?
+    private var getAccessTokenResult: Result<String,AuthError>?
+    private var getSetOfTokensResult: Result<(idToken: String, accessToken: String), AuthError>?
 
     func signUp(username: String, password: String, attributes: [String : String]) -> AnyPublisher<SignUpConfirmationState, AuthError> {
         Future<SignUpConfirmationState, AuthError> { promise in
@@ -121,3 +121,43 @@ class MockAuthService: AuthServiceProtocol {
         .eraseToAnyPublisher()
     }
 }
+
+#if DEBUG
+extension MockAuthService {
+    func setSignUpResult(_ result: Result<SignUpConfirmationState, AuthError>?) {
+        self.signUpResult = result
+    }
+
+    func setConfirmSignUpResult(_ result: Result<Void, AuthError>?) {
+        self.confirmSignUpResult = result
+    }
+
+    func setSignInResult(_ result: Result<SignInState, AuthError>?) {
+        self.signInResult = result
+    }
+
+    func setSignOutResult(_ result: Result<Void, AuthError>?) {
+        self.signOutResult = result
+    }
+
+    func setCheckUserStateResult(_ result: Result<UserState, AuthError>?) {
+        self.checkUserStateResult = result
+    }
+
+    func setGetTokenResult(_ result: Result<String, AuthError>?) {
+        self.getTokenResult = result
+    }
+
+    func setGetRefreshTokenResult(_ result: Result<String, AuthError>?) {
+        self.getRefreshTokenResult = result
+    }
+
+    func setGetAccessTokenResult(_ result: Result<String, AuthError>?) {
+        self.getAccessTokenResult = result
+    }
+
+    func setGetSetOfTokensResult(_ result: Result<(idToken: String, accessToken: String), AuthError>?) {
+        self.getSetOfTokensResult = result
+    }
+}
+#endif

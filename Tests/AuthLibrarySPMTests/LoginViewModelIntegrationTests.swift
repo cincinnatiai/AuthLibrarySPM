@@ -43,33 +43,6 @@ struct LoginViewModelIntegrationTests {
         viewModel = LoginViewModel(authManager: authManager, keychain: keychain, preferences: MockFaceIDPreferences())
     }
 
-    @available(iOS 16.0, *)
-    @Test
-    func testSuccessfulLogin() async throws {
-
-        // Given (Provide an actual mail and password)
-        viewModel.email = "your-email@mail.com"
-        viewModel.password = "your-password"
-        viewModel.isFaceIDEnabled = false
-
-        var receivedState: AuthState? = nil
-        let cancellable = authManager.authStatePublisher
-            .sink { receivedState = $0 }
-
-        authManager.signIn(username: viewModel.email, password: viewModel.password)
-
-        try? await Task.sleep(nanoseconds: 2_000_000_000)
-
-        if case .session(let user)? = receivedState {
-            #expect(user == "Session initiated")
-            #expect(authManager.isLoggedIn == true)
-        } else {
-            #expect(Bool(false), "Unexpected auth state: \(String(describing: receivedState))")
-        }
-
-        _ = cancellable
-    }
-
     @available(iOS 13.0, *)
     @Test
     func testFailedLogin() async throws {

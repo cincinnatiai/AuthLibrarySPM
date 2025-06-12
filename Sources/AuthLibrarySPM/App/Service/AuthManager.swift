@@ -44,12 +44,12 @@ open class AuthManager: ObservableObject {
         AWSMobileClient.default().initialize { (userState, error) in
             if let error = error {
 #if DEBUG
-                print("Error initializing AWSMobileClient: \(error.localizedDescription)")
+                print(LocalizedStringKeys.ErrorInitializeAWS, error.localizedDescription)
 #endif
             } else if let userState = userState {
 #if DEBUG
 
-                print("AWSMobileClient initialized with state: \(userState.rawValue)")
+                print(LocalizedStringKeys.ErrorInitializeAwsState, userState.rawValue)
 #endif
 
             }
@@ -75,7 +75,7 @@ open class AuthManager: ObservableObject {
                 authStateSubject.send(.confirmCode(username: username))
                 errorSubject.send(nil)
             } else {
-                errorSubject.send("Sign up failed. Please try again.")
+                errorSubject.send(LocalizedStringKeys.ErrorSignupFailed)
             }
         }
     }
@@ -209,9 +209,9 @@ extension AuthError {
         case .awsError(let error):
             return error.stringMessage
         case .unknown:
-            return "An unknown error occurred."
+            return LocalizedStringKeys.ErrorUnknownAuthError
         case .tokenRefreshFailed:
-            return "Token Expired, please, Sign In again."
+            return LocalizedStringKeys.ErrorTokenExpiredError
         }
     }
 }

@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "AuthLibrarySPM",
+    defaultLocalization: "en",
     platforms: [.iOS(.v12)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -29,7 +30,10 @@ let package = Package(
                             .product(name: "AWSCognitoIdentityProviderASF", package: "aws-sdk-ios-spm"),
                             .product(name: "KeychainSwift", package: "Keychain-swift")
                         ],
-                        path: "Sources"
+                        path: "Sources/AuthLibrarySPM",
+            resources: [
+                .process("Localizations")
+            ]
         ),
         .testTarget(
             name: "AuthLibrarySPMTests",

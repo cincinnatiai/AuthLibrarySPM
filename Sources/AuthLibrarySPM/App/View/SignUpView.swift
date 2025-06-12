@@ -19,16 +19,16 @@ public struct SignUpView: View {
     public var body: some View {
         VStack {
             Spacer()
-            TextField("Email", text: $viewModel.email)
+            TextField(LocalizedStringKeys.EmailTextField, text: $viewModel.email)
                 .textFieldStyle()
                 .keyboardType(.emailAddress)
-            SecureInputField(title: "Password", text: $viewModel.password)
+            SecureInputField(title: LocalizedStringKeys.PasswordTextField, text: $viewModel.password)
             SecureInputField(
-                title: "Confirm Password",
+                title: LocalizedStringKeys.ConfirmPasswordText,
                 text: $viewModel.confirmPassword
             )
 
-            Button("Sign Up", action: {
+            Button(LocalizedStringKeys.SignUpButtonText, action: {
                 viewModel.signUp()
             })
             .buttonStyle(isEnabled: viewModel.requirementsFulfilled())
@@ -42,7 +42,7 @@ public struct SignUpView: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Password requirements:")
+                Text(LocalizedStringKeys.PasswordRequirementsText)
                     .fontWeight(.bold)
 
                 ForEach(
@@ -63,7 +63,7 @@ public struct SignUpView: View {
 
             Spacer()
 
-            Button("Already have an account? Log in.", action: {
+            Button(LocalizedStringKeys.AccountExistText, action: {
                 viewModel.showLogin()
             })
         }
@@ -74,3 +74,4 @@ public struct SignUpView: View {
         }
     }
 }
+

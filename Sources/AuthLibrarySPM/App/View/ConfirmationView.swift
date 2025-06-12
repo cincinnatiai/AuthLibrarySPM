@@ -17,10 +17,10 @@ public struct ConfirmationView: View {
 
     public var body: some View {
         VStack {
-            Text("Username: \(viewModel.username)")
-            TextField("Confirmation Code", text: $viewModel.confirmationCode)
+            Text(LocalizedStringKeys.UserNameText + viewModel.username)
+            TextField(LocalizedStringKeys.ConfirmationCodeTextField, text: $viewModel.confirmationCode)
                 .textFieldStyle()
-            Button("Confirm", action: {
+            Button(LocalizedStringKeys.ConfirmButtonText, action: {
                 viewModel.confirmSignUp()
             })
             .buttonStyle()
@@ -37,5 +37,5 @@ public struct ConfirmationView: View {
 
 @available(iOS 14.0, *)
 #Preview {
-    ConfirmationView(viewModel: ConfirmationViewModel(authManager: AuthManager(), username: "User"))
+    ConfirmationView(viewModel: ConfirmationViewModel(authManager: AuthManager(), username: LocalizedStringKeys.UserNamePreviewText))
 }

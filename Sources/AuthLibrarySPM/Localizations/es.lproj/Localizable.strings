@@ -1,0 +1,30 @@
+// MARK: - General
+"Email_Text_Field" = "Email";
+"Password_Text_Field" = "Password";
+"Login_Button_Text" = "Login";
+"Sign_Up_Button_Text" = "Sign Up";
+"Sign_Out_Button_Text" = "Sign Out";
+// MARK: - ConfirmationView
+"Username_Text" = "Nombre: ";
+"Confirmation_Code_Text_Field" = "Código de confirmación";
+"Confirm_Button_Text" = "Confirmar";
+"User_Name_Preview_Text" = "Usuario";
+// MARK: - LoginView
+"Image_System_Name" = "faceid";
+"Sign_Up_Text" = "No tienes cuenta? Sign up.";
+// MARK: - SessionView
+// MARK: - LoginView
+// MARK: - SignUpView
+"Confirm_Password_Text" = "Confirmar Password";
+"Password_Requirements_Text:" = "Requisitos de Password: ";
+"Account_Exist_Text" = "Ya tienes cuenta? Log in.";
+// MARK: - SignUpRequirments
+"Enter_Valid_Email_Text" = "Ingresa correo válido";
+"Eight_Characters_Text" = "Mínimo 8 carácteres";
+"One_Uppercase_Text" = "Mínimo una mayúscula";
+"One_Lowercase_Text" = "Mínimo una minúscula";
+"One_Digit_Text" = "Mínimo un dígito";
+"One_Special_Character" = "Mínimo un carácter especial";
+"Password_Mismatch_Text" = "Password y confirmación de password deben coincidir";
+"Invalid_Password_Email_Text" = "Por favor ingresa un email y password válidos.";
+

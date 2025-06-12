@@ -16,25 +16,25 @@ public class SignUpViewModel: AuthViewModel {
 
     var signUpRequirements: [SignUpRequirements] {
         [
-            SignUpRequirements(text: "Enter a valid email") {
+            SignUpRequirements(text: LocalizedStringKeys.EnterValidEmailText) {
                 self.email.range(of: #"^\S+@\S+\.\S+$"#, options: .regularExpression) != nil
             },
-            SignUpRequirements(text: "At least 8 characters") {
+            SignUpRequirements(text: LocalizedStringKeys.EightCharactersText) {
                 self.password.count >= 8
             },
-            SignUpRequirements(text: "At least one uppercase letter") {
+            SignUpRequirements(text: LocalizedStringKeys.OneUppercaseText) {
                 self.password.range(of: "[A-Z]", options: .regularExpression) != nil
             },
-            SignUpRequirements(text: "At least one lowercase letter") {
+            SignUpRequirements(text: LocalizedStringKeys.OneLowercaseText) {
                 self.password.range(of: "[a-z]", options: .regularExpression) != nil
             },
-            SignUpRequirements(text: "At least one digit") {
+            SignUpRequirements(text: LocalizedStringKeys.OneDigitText) {
                 self.password.range(of: "[0-9]", options: .regularExpression) != nil
             },
-            SignUpRequirements(text: "At least one special character") {
+            SignUpRequirements(text: LocalizedStringKeys.OneSpecialCharacter) {
                 self.password.range(of: "[^A-Za-z0-9]", options: .regularExpression) != nil
             },
-            SignUpRequirements(text: "Password and confirm password must match") {
+            SignUpRequirements(text: LocalizedStringKeys.PasswordMismatchText) {
                 self.password == self.confirmPassword && !self.confirmPassword.isEmpty
             }
         ]
@@ -48,7 +48,7 @@ public class SignUpViewModel: AuthViewModel {
 
     public func signUp() {
         guard !email.isEmpty, !password.isEmpty, password == confirmPassword else {
-            self.errorMessage = "Please enter a valid email and matching passwords."
+            self.errorMessage = LocalizedStringKeys.InvalidPasswordEmailText
             handleActionResult()
             return
         }

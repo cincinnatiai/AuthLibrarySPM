@@ -1,29 +1,27 @@
 // MARK: - General
-"Email_Text_Field" = "Email";
-"Password_Text_Field" = "Password";
-"Login_Button_Text" = "Login";
-"Sign_Up_Button_Text" = "Sign Up";
-"Sign_Out_Button_Text" = "Sign Out";
+"General_EmailTextPlaceHolder" = "Email";
+"General_PasswordTexPlaceHolder" = "Password";
+"General_LoginButton" = "Login";
+"General_SignUpButton" = "Sign Up";
+"General_SignOutButton" = "Sign Out";
 // MARK: - ConfirmationView
-"Username_Text" = "Username: ";
-"Confirmation_Code_Text_Field" = "Confirmation Code";
-"Confirm_Button_Text" = "Confirm";
-"User_Name_Preview_Text" = "User";
+"ConfirmationView_UsernameLabel" = "Username: ";
+"ConfirmationView_CodeTextField" = "Confirmation Code";
+"ConfirmationView_ConfirmButton" = "Confirm";
+"ConfirmationView_UsernamePreview" = "User";
 // MARK: - LoginView
-"Image_System_Name" = "faceid";
-"Sign_Up_Text" = "Don't have an account? Sign up.";
-// MARK: - SessionView
-// MARK: - LoginView
+"LoginView_FaceIDImageSystemName" = "faceid";
+"LoginView_SignUpPrompt" = "Don't have an account? Sign up.";
 // MARK: - SignUpView
-"Confirm_Password_Text" = "Confirm Password";
-"Password_Requirements_Text" = "Password requirements: ";
-"Account_Exist_Text" = "Already have an account? Log in.";
+"SignUpView_ConfirmPasswordPlaceHolder" = "Confirm Password";
+"SignUpView_PasswordRequirementsLabel" = "Password requirements: ";
+"SignUpView_AccountExistsPrompt" = "Already have an account? Log in.";
 // MARK: - SignUpRequirements
-"Enter_Valid_Email_Text" = "Enter a valid email";
-"Eight_Characters_Text" = "At least 8 characters";
-"One_Uppercase_Text" = "At least one uppercase";
-"One_Lowercase_Text" = "At least one lowercase";
-"One_Digit_Text" = "At least one digit";
-"One_Special_Character" = "At least one special character";
-"Password_Mismatch_Text" = "Password and confirm password must match";
-"Invalid_Password_Email_Text" = "Please enter a valid email and matching passwords.";
+"SignUpRequirement_ValidEmail" = "Enter a valid email";
+"SignUpRequirement_MinLength" = "At least 8 characters";
+"SignUpRequirement_Uppercase" = "At least one uppercase";
+"SignUpRequirement_Lowercase" = "At least one lowercase";
+"SignUpRequirement_Digit" = "At least one digit";
+"SignUpRequirement_SpecialCharacter" = "At least one special character";
+"SignUpRequirement_PasswordMismatch" = "Password and confirm password must match";
+"SignUpRequirement_InvalidEmailAndPassword" = "Please enter a valid email and matching passwords.";

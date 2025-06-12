@@ -39,7 +39,7 @@ public struct LoginView: BaseLoginView {
     
     public var emailTextField: AnyView {
         AnyView (
-            TextField(LocalizedStringKeys.EmailTextField, text: $viewModel.email)
+            TextField(LocalizedStringKeys.GeneralEmailTextPlaceHolder, text: $viewModel.email)
                 .textFieldStyle()
                 .keyboardType(.emailAddress)
         )
@@ -47,13 +47,13 @@ public struct LoginView: BaseLoginView {
     
     public var passwordTextField: AnyView {
         AnyView (
-            SecureInputField(title: LocalizedStringKeys.PasswordTextField, text: $viewModel.password)
+            SecureInputField(title: LocalizedStringKeys.GeneralPasswordTexPlaceHolder, text: $viewModel.password)
         )
     }
     
     public var loginButton: AnyView {
         AnyView (
-            Button(LocalizedStringKeys.LoginButtonText, action: {
+            Button(LocalizedStringKeys.GeneralLoginButton, action: {
                 Task {
                     await viewModel.login()
                 }
@@ -71,7 +71,7 @@ public struct LoginView: BaseLoginView {
     public var faceIDToggle: AnyView {
         AnyView (
             Toggle(isOn: $viewModel.isFaceIDEnabled) {
-                Image(systemName: LocalizedStringKeys.ImageSystemName)
+                Image(systemName: LocalizedStringKeys.LoginViewFaceIDImageSystemName)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 30, height: 30)
@@ -91,7 +91,7 @@ public struct LoginView: BaseLoginView {
     
     public var signUpButton: AnyView {
         AnyView (
-            Button(LocalizedStringKeys.SignUpText, action: {
+            Button(LocalizedStringKeys.LoginViewSignUpPrompt, action: {
                 viewModel.signUp()
             })
             .padding(.top, 20)
@@ -107,5 +107,3 @@ public struct LoginView: BaseLoginView {
 #Preview {
     LoginView(viewModel: LoginViewModel(authManager: AuthManager(), preferences: FaceIDPreferencesManager()))
 }
-
-

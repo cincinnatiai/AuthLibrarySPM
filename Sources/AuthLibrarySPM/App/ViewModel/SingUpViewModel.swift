@@ -16,25 +16,25 @@ public class SignUpViewModel: AuthViewModel {
 
     var signUpRequirements: [SignUpRequirements] {
         [
-            SignUpRequirements(text: LocalizedStringKeys.EnterValidEmailText) {
+            SignUpRequirements(text: LocalizedStringKeys.SignUpRequirementValidEmail) {
                 self.email.range(of: #"^\S+@\S+\.\S+$"#, options: .regularExpression) != nil
             },
-            SignUpRequirements(text: LocalizedStringKeys.EightCharactersText) {
+            SignUpRequirements(text: LocalizedStringKeys.SignUpRequirementMinLength) {
                 self.password.count >= 8
             },
-            SignUpRequirements(text: LocalizedStringKeys.OneUppercaseText) {
+            SignUpRequirements(text: LocalizedStringKeys.SignUpRequirementUppercase) {
                 self.password.range(of: "[A-Z]", options: .regularExpression) != nil
             },
-            SignUpRequirements(text: LocalizedStringKeys.OneLowercaseText) {
+            SignUpRequirements(text: LocalizedStringKeys.SignUpRequirementLowercase) {
                 self.password.range(of: "[a-z]", options: .regularExpression) != nil
             },
-            SignUpRequirements(text: LocalizedStringKeys.OneDigitText) {
+            SignUpRequirements(text: LocalizedStringKeys.SignUpRequirementDigit) {
                 self.password.range(of: "[0-9]", options: .regularExpression) != nil
             },
-            SignUpRequirements(text: LocalizedStringKeys.OneSpecialCharacter) {
+            SignUpRequirements(text: LocalizedStringKeys.SignUpRequirementSpecialCharacter) {
                 self.password.range(of: "[^A-Za-z0-9]", options: .regularExpression) != nil
             },
-            SignUpRequirements(text: LocalizedStringKeys.PasswordMismatchText) {
+            SignUpRequirements(text: LocalizedStringKeys.SignUpRequirementPasswordMismatch) {
                 self.password == self.confirmPassword && !self.confirmPassword.isEmpty
             }
         ]
@@ -48,7 +48,7 @@ public class SignUpViewModel: AuthViewModel {
 
     public func signUp() {
         guard !email.isEmpty, !password.isEmpty, password == confirmPassword else {
-            self.errorMessage = LocalizedStringKeys.InvalidPasswordEmailText
+            self.errorMessage = LocalizedStringKeys.SignUpRequirementInvalidEmailAndPassword
             handleActionResult()
             return
         }

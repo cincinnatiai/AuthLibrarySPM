@@ -1,30 +1,27 @@
 // MARK: - General
-"Email_Text_Field" = "Email";
-"Password_Text_Field" = "Password";
-"Login_Button_Text" = "Login";
-"Sign_Up_Button_Text" = "Sign Up";
-"Sign_Out_Button_Text" = "Sign Out";
+"General_EmailTextPlaceHolder" = "Correo electrónico";
+"General_PasswordTexPlaceHolder" = "Contraseña";
+"General_LoginButton" = "Iniciar sesión";
+"General_SignUpButton" = "Registrarse";
+"General_SignOutButton" = "Cerrar sesión";
 // MARK: - ConfirmationView
-"Username_Text" = "Nombre: ";
-"Confirmation_Code_Text_Field" = "Código de confirmación";
-"Confirm_Button_Text" = "Confirmar";
-"User_Name_Preview_Text" = "Usuario";
+"ConfirmationView_UsernameLabel" = "Nombre de usuario: ";
+"ConfirmationView_CodeTextField" = "Código de confirmación";
+"ConfirmationView_ConfirmButton" = "Confirmar";
+"ConfirmationView_UsernamePreview" = "Usuario";
 // MARK: - LoginView
-"Image_System_Name" = "faceid";
-"Sign_Up_Text" = "No tienes cuenta? Sign up.";
-// MARK: - SessionView
-// MARK: - LoginView
+"LoginView_FaceIDImageSystemName" = "faceid";
+"LoginView_SignUpPrompt" = "¿No tienes una cuenta? Regístrate.";
 // MARK: - SignUpView
-"Confirm_Password_Text" = "Confirmar Password";
-"Password_Requirements_Text:" = "Requisitos de Password: ";
-"Account_Exist_Text" = "Ya tienes cuenta? Log in.";
-// MARK: - SignUpRequirments
-"Enter_Valid_Email_Text" = "Ingresa correo válido";
-"Eight_Characters_Text" = "Mínimo 8 carácteres";
-"One_Uppercase_Text" = "Mínimo una mayúscula";
-"One_Lowercase_Text" = "Mínimo una minúscula";
-"One_Digit_Text" = "Mínimo un dígito";
-"One_Special_Character" = "Mínimo un carácter especial";
-"Password_Mismatch_Text" = "Password y confirmación de password deben coincidir";
-"Invalid_Password_Email_Text" = "Por favor ingresa un email y password válidos.";
-
+"SignUpView_ConfirmPasswordPlaceHolder" = "Confirmar contraseña";
+"SignUpView_PasswordRequirementsLabel" = "Requisitos de la contraseña: ";
+"SignUpView_AccountExistsPrompt" = "¿Ya tienes una cuenta? Inicia sesión.";
+// MARK: - SignUpRequirements
+"SignUpRequirement_ValidEmail" = "Ingresa un correo válido";
+"SignUpRequirement_MinLength" = "Al menos 8 caracteres";
+"SignUpRequirement_Uppercase" = "Al menos una mayúscula";
+"SignUpRequirement_Lowercase" = "Al menos una minúscula";
+"SignUpRequirement_Digit" = "Al menos un número";
+"SignUpRequirement_SpecialCharacter" = "Al menos un carácter especial";
+"SignUpRequirement_PasswordMismatch" = "Las contraseñas no coinciden";
+"SignUpRequirement_InvalidEmailAndPassword" = "Ingresa un correo válido y contraseñas que coincidan.";

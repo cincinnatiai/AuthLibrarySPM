@@ -17,7 +17,7 @@ public struct SettingsView: View {
         VStack {
             Spacer()
             Spacer()
-            Button(LocalizedStringKeys.SignOutButtonText, action: authManager.signOut)
+            Button(LocalizedStringKeys.GeneralSignOutButton, action: authManager.signOut)
                 .buttonStyle()
                 .padding()
             Spacer()

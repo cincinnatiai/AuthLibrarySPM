@@ -6,32 +6,30 @@ public extension String {
 }
 public enum LocalizedStringKeys {
     // MARK: - General
-    public static let EmailTextField = "Email_Text_Field".localized
-    public static let PasswordTextField = "Password_Text_Field".localized
-    public static let SignUpButtonText = "Sign_Up_Button_Text".localized
-    public static let SignOutButtonText = "Sign_Out_Button_Text".localized
+    public static let GeneralEmailTextPlaceHolder = "General_EmailTextPlaceHolder".localized
+    public static let GeneralPasswordTexPlaceHolder = "General_PasswordTexPlaceHolder".localized
+    public static let GeneralLoginButton = "General_LoginButton".localized
+    public static let GeneralSignUpButton = "General_SignUpButton".localized
+    public static let GeneralSignOutButton = "General_SignOutButton".localized
     // MARK: - ConfirmationView
-    public static let UserNameText = "Username_Text".localized
-    public static let ConfirmationCodeTextField = "Confirmation_Code_Text_Field".localized
-    public static let ConfirmButtonText = "Confirm_Button_Text".localized
-    public static let UserNamePreviewText = "User_Name_Preview_Text".localized
+    public static let ConfirmationViewUsernameLabel = "ConfirmationView_UsernameLabel".localized
+    public static let ConfirmationViewCodeTextField = "ConfirmationView_CodeTextField".localized
+    public static let ConfirmationViewConfirmButton = "ConfirmationView_ConfirmButton".localized
+    public static let ConfirmationViewUsernamePreview = "ConfirmationView_UsernamePreview".localized
     // MARK: - LoginView
-    public static let LoginButtonText = "Login_Button_Text".localized
-    public static let ImageSystemName = "Image_System_Name".localized
-    public static let SignUpText = "Sign_Up_Text".localized
-    // MARK: - SessionView
-    // MARK: - SettingsView
+    public static let LoginViewFaceIDImageSystemName = "LoginView_FaceIDImageSystemName".localized
+    public static let LoginViewSignUpPrompt = "LoginView_SignUpPrompt".localized
     // MARK: - SignUpView
-    public static let ConfirmPasswordText = "Confirm_Password_Text".localized
-    public static let PasswordRequirementsText = "Password_Requirements_Text".localized
-    public static let AccountExistText = "Account_Exist_Text".localized
+    public static let SignUpViewConfirmPasswordPlaceHolder = "SignUpView_ConfirmPasswordPlaceHolder".localized
+    public static let SignUpViewPasswordRequirementsLabel = "SignUpView_PasswordRequirementsLabel".localized
+    public static let SignUpViewAccountExistsPrompt = "SignUpView_AccountExistsPrompt".localized
     // MARK: - SignUpRequirements
-    public static let EnterValidEmailText = "Enter_Valid_Email_Text".localized
-    public static let EightCharactersText = "Eight_Characters_Text".localized
-    public static let OneUppercaseText = "One_Uppercase_Text".localized
-    public static let OneLowercaseText = "One_Lowercase_Text".localized
-    public static let OneDigitText = "One_Digit_Text".localized
-    public static let OneSpecialCharacter = "One_Special_Character".localized
-    public static let PasswordMismatchText = "Password_Mismatch_Text".localized
-    public static let InvalidPasswordEmailText = "Invalid_Password_Email_Text".localized
+    public static let SignUpRequirementValidEmail = "SignUpRequirement_ValidEmail".localized
+    public static let SignUpRequirementMinLength = "SignUpRequirement_MinLength".localized
+    public static let SignUpRequirementUppercase = "SignUpRequirement_Uppercase".localized
+    public static let SignUpRequirementLowercase = "SignUpRequirement_Lowercase".localized
+    public static let SignUpRequirementDigit = "SignUpRequirement_Digit".localized
+    public static let SignUpRequirementSpecialCharacter = "SignUpRequirement_SpecialCharacter".localized
+    public static let SignUpRequirementPasswordMismatch = "SignUpRequirement_PasswordMismatch".localized
+    public static let SignUpRequirementInvalidEmailAndPassword = "SignUpRequirement_InvalidEmailAndPassword".localized
 }

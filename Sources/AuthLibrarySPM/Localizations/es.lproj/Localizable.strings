@@ -1,0 +1,27 @@
+// MARK: - General
+"General_EmailTextPlaceHolder" = "Correo electrónico";
+"General_PasswordTexPlaceHolder" = "Contraseña";
+"General_LoginButton" = "Iniciar sesión";
+"General_SignUpButton" = "Registrarse";
+"General_SignOutButton" = "Cerrar sesión";
+// MARK: - ConfirmationView
+"ConfirmationView_UsernameLabel" = "Nombre de usuario: ";
+"ConfirmationView_CodeTextField" = "Código de confirmación";
+"ConfirmationView_ConfirmButton" = "Confirmar";
+"ConfirmationView_UsernamePreview" = "Usuario";
+// MARK: - LoginView
+"LoginView_FaceIDImageSystemName" = "faceid";
+"LoginView_SignUpPrompt" = "¿No tienes una cuenta? Regístrate.";
+// MARK: - SignUpView
+"SignUpView_ConfirmPasswordPlaceHolder" = "Confirmar contraseña";
+"SignUpView_PasswordRequirementsLabel" = "Requisitos de la contraseña: ";
+"SignUpView_AccountExistsPrompt" = "¿Ya tienes una cuenta? Inicia sesión.";
+// MARK: - SignUpRequirements
+"SignUpRequirement_ValidEmail" = "Ingresa un correo válido";
+"SignUpRequirement_MinLength" = "Al menos 8 caracteres";
+"SignUpRequirement_Uppercase" = "Al menos una mayúscula";
+"SignUpRequirement_Lowercase" = "Al menos una minúscula";
+"SignUpRequirement_Digit" = "Al menos un número";
+"SignUpRequirement_SpecialCharacter" = "Al menos un carácter especial";
+"SignUpRequirement_PasswordMismatch" = "Las contraseñas no coinciden";
+"SignUpRequirement_InvalidEmailAndPassword" = "Ingresa un correo válido y contraseñas que coincidan.";

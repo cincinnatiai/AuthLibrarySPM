@@ -19,16 +19,15 @@ public struct SignUpView: View {
     public var body: some View {
         VStack {
             Spacer()
-            TextField("Email", text: $viewModel.email)
+            TextField(LocalizedStringKeys.GeneralEmailTextPlaceHolder, text: $viewModel.email)
                 .textFieldStyle()
                 .keyboardType(.emailAddress)
-            SecureInputField(title: "Password", text: $viewModel.password)
+            SecureInputField(title: LocalizedStringKeys.SignUpViewConfirmPasswordPlaceHolder, text: $viewModel.password)
             SecureInputField(
-                title: "Confirm Password",
+                title: LocalizedStringKeys.SignUpViewConfirmPasswordPlaceHolder,
                 text: $viewModel.confirmPassword
             )
-
-            Button("Sign Up", action: {
+            Button(LocalizedStringKeys.GeneralSignUpButton, action:{
                 viewModel.signUp()
             })
             .buttonStyle(isEnabled: viewModel.requirementsFulfilled())
@@ -40,11 +39,9 @@ public struct SignUpView: View {
                     .foregroundColor(firstRequirement.isValid() ? .green : .red)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-
             VStack(alignment: .leading, spacing: 4) {
-                Text("Password requirements:")
+                Text(LocalizedStringKeys.SignUpViewPasswordRequirementsLabel.localizedCapitalized)
                     .fontWeight(.bold)
-
                 ForEach(
                     viewModel.signUpRequirements.dropFirst(),
                     id: \.text
@@ -58,12 +55,9 @@ public struct SignUpView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-
             viewModel.errorTextView
-
             Spacer()
-
-            Button("Already have an account? Log in.", action: {
+            Button(LocalizedStringKeys.SignUpViewAccountExistsPrompt.localizedCapitalized, action: {
                 viewModel.showLogin()
             })
         }

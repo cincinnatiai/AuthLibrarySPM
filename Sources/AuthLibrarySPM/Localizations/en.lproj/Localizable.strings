@@ -1,0 +1,27 @@
+// MARK: - General
+"General_EmailTextPlaceHolder" = "Email";
+"General_PasswordTexPlaceHolder" = "Password";
+"General_LoginButton" = "Login";
+"General_SignUpButton" = "Sign Up";
+"General_SignOutButton" = "Sign Out";
+// MARK: - ConfirmationView
+"ConfirmationView_UsernameLabel" = "Username: ";
+"ConfirmationView_CodeTextField" = "Confirmation Code";
+"ConfirmationView_ConfirmButton" = "Confirm";
+"ConfirmationView_UsernamePreview" = "User";
+// MARK: - LoginView
+"LoginView_FaceIDImageSystemName" = "faceid";
+"LoginView_SignUpPrompt" = "Don't have an account? Sign up.";
+// MARK: - SignUpView
+"SignUpView_ConfirmPasswordPlaceHolder" = "Confirm Password";
+"SignUpView_PasswordRequirementsLabel" = "Password requirements: ";
+"SignUpView_AccountExistsPrompt" = "Already have an account? Log in.";
+// MARK: - SignUpRequirements
+"SignUpRequirement_ValidEmail" = "Enter a valid email";
+"SignUpRequirement_MinLength" = "At least 8 characters";
+"SignUpRequirement_Uppercase" = "At least one uppercase";
+"SignUpRequirement_Lowercase" = "At least one lowercase";
+"SignUpRequirement_Digit" = "At least one digit";
+"SignUpRequirement_SpecialCharacter" = "At least one special character";
+"SignUpRequirement_PasswordMismatch" = "Password and confirm password must match";
+"SignUpRequirement_InvalidEmailAndPassword" = "Please enter a valid email and matching passwords.";

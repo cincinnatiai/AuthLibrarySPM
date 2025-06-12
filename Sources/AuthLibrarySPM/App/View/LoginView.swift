@@ -39,7 +39,7 @@ public struct LoginView: BaseLoginView {
     
     public var emailTextField: AnyView {
         AnyView (
-            TextField("Email", text: $viewModel.email)
+            TextField(LocalizedStringKeys.GeneralEmailTextPlaceHolder, text: $viewModel.email)
                 .textFieldStyle()
                 .keyboardType(.emailAddress)
         )
@@ -47,13 +47,13 @@ public struct LoginView: BaseLoginView {
     
     public var passwordTextField: AnyView {
         AnyView (
-            SecureInputField(title: "Password", text: $viewModel.password)
+            SecureInputField(title: LocalizedStringKeys.GeneralPasswordTexPlaceHolder, text: $viewModel.password)
         )
     }
     
     public var loginButton: AnyView {
         AnyView (
-            Button("Login", action: {
+            Button(LocalizedStringKeys.GeneralLoginButton, action: {
                 Task {
                     await viewModel.login()
                 }
@@ -71,7 +71,7 @@ public struct LoginView: BaseLoginView {
     public var faceIDToggle: AnyView {
         AnyView (
             Toggle(isOn: $viewModel.isFaceIDEnabled) {
-                Image(systemName: "faceid")
+                Image(systemName: LocalizedStringKeys.LoginViewFaceIDImageSystemName)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 30, height: 30)
@@ -91,7 +91,7 @@ public struct LoginView: BaseLoginView {
     
     public var signUpButton: AnyView {
         AnyView (
-            Button("Don't have an account? Sign up.", action: {
+            Button(LocalizedStringKeys.LoginViewSignUpPrompt, action: {
                 viewModel.signUp()
             })
             .padding(.top, 20)

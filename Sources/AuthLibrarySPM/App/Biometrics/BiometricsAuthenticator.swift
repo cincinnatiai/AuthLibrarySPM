@@ -9,6 +9,7 @@ import Foundation
 import LocalAuthentication
 
 @available(iOS 13.0, *)
+
 open class FaceIDAuthenticator {
     private let context = LAContext()
 

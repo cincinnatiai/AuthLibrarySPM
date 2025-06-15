@@ -63,6 +63,12 @@ public class LoginViewModel: AuthViewModel {
         guard !isFaceIDInProgress else { return }
         isFaceIDInProgress = true
 
+        // Check feature flag before using biometrics
+        guard FeatureFlags.isBiometricAuthEnabled else {
+            handleAuthenticationError("Biometric login is currently disabled.")
+            return
+        }
+
         do {
             guard try await faceIDAuthenticator.authenticate() else { return }
 
@@ -76,6 +82,7 @@ public class LoginViewModel: AuthViewModel {
             handleAuthenticationError(error.localizedDescription)
         }
     }
+
 
     private func fetchStoredCredentials() -> (email: String, password: String)? {
         guard let email = keychain.get(key: "email"),

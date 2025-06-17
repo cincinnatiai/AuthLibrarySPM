@@ -56,13 +56,19 @@ open class AuthManager: ObservableObject {
         }
     }
 
-    open func checkUserState() {
+    open func checkUserState(userName: String = "") {
         handlePublisher(authService.checkUserState()) { [weak self] userState in
             guard let self else { return }
             if case .confirmCode = authStateSubject.value { return }
             isLoggedIn = (userState == .signedIn)
-            authStateSubject.value = isLoggedIn ? .session(user: "Session initiated") : .login
+            authStateSubject.value = isLoggedIn ? .session(user: userName) : .login
             errorSubject.send(nil)
+
+            if isLoggedIn {
+                retrieveIdToken()
+                retrieveRefreshToken()
+                retrieveAccessToken()
+            }
         }
     }
 
@@ -92,7 +98,7 @@ open class AuthManager: ObservableObject {
             guard let self else { return }
             if signInResult == .signedIn {
                 isLoggedIn = true
-                checkUserState()
+                checkUserState(userName: username)
                 retrieveIdToken()
                 retrieveRefreshToken()
                 retrieveAccessToken()

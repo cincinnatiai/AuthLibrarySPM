@@ -16,19 +16,19 @@ open class FaceIDAuthenticator {
 
     @MainActor
     open func authenticate() async throws -> Bool {
-        context.localizedCancelTitle = "Use Password"
+        context.localizedCancelTitle = LocalizedStringKeys.BiometricAuthenticatorUsePasswordLabel
         
         guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) else {
             throw FaceIdError.biometryNotAvailable
         }
         return try await withCheckedThrowingContinuation { continuation in
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Authenticate to access your account") { success, error in
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: LocalizedStringKeys.BiometricAuthenticatorAccessLabel) { success, error in
                 if success {
                     continuation.resume(returning: true)
                 } else if let error = error as? LAError{
                     continuation.resume(throwing: FaceIdError.mapError(error))
                 } else {
-                    continuation.resume(throwing: FaceIdError.authenticationFailed(error?.localizedDescription ?? "unknown error"))
+                    continuation.resume(throwing: FaceIdError.authenticationFailed(error?.localizedDescription ?? LocalizedStringKeys.BiometricAuthenticatorFailedLabel))
                 }
             }
         }
@@ -63,17 +63,17 @@ public enum FaceIdError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .biometryNotAvailable:
-            return "Face ID is not available on this device."
+            return LocalizedStringKeys.BiometricAuthenticatorErrorBiometryNotAvailble
         case .authenticationFailed(let reason):
-            return "Face ID authentication failed: \(reason)"
+            return LocalizedStringKeys.BiometricAuthenticatorErrorAuthenticationFailed + reason
         case .userCanceled:
-            return "Authentication canceled by the user."
+            return LocalizedStringKeys.BiometricAuthenticatorErrorUserCanceled
         case .systemCanceled:
-            return "Authentication was interrupted."
+            return LocalizedStringKeys.BiometricAuthenticatorErrorSystemCanceled
         case .biometryLockout:
-            return "Too many failed attempts. Try again later or use a password."
+            return LocalizedStringKeys.BiometricAuthenticatorErrorBiometryLockout
         case .invalidatedContext:
-            return "Authentication session expired. Try again."
+            return LocalizedStringKeys.BiometricAuthenticatorErrorInvalidatedContext
         }
     }
 }

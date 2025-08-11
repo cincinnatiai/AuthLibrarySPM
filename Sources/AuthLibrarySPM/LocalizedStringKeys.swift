@@ -38,4 +38,16 @@ public enum LocalizedStringKeys {
     public static let ErrorSignupFailed = "Error_SignupFailed".localized
     public static let ErrorUnknownAuthError = "Error_UnknownAuthError".localized
     public static let ErrorTokenExpiredError = "Error_TokenExpiredError".localized
+    // MARK: - Biometric Authenticator Module
+    public static let BiometricAuthenticatorUsePasswordLabel = "BiometricAuthenticator_UsePasswordAccountLabel".localized
+    public static let BiometricAuthenticatorAccessLabel = "BiometricAuthenticator_AccessAccountLabel".localized
+    public static let BiometricAuthenticatorFailedLabel = "BiometricAuthenticator_FailedLabel".localized
+    // MARK: - Biometric Authenticator Error Handling
+    public static let BiometricAuthenticatorErrorBiometryNotAvailble = "BiometricAuthenticatorError_BiometryNotAvailble".localized
+    public static let BiometricAuthenticatorErrorAuthenticationFailed = "BiometricAuthenticatorError_AuthenticationFailed".localized
+    public static let BiometricAuthenticatorErrorUserCanceled = "BiometricAuthenticatorError_ErrorUserCanceled".localized
+    public static let BiometricAuthenticatorErrorSystemCanceled = "BiometricAuthenticatorError_ErrorSystemCanceled".localized
+    public static let BiometricAuthenticatorErrorBiometryLockout = "BiometricAuthenticatorError_ErrorBiometryLockout".localized
+    public static let BiometricAuthenticatorErrorInvalidatedContext = "BiometricAuthenticatorError_ErrorInvalidatedContext".localized
+    
 }

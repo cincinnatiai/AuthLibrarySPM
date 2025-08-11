@@ -25,3 +25,20 @@
 "SignUpRequirement_SpecialCharacter" = "Al menos un carácter especial";
 "SignUpRequirement_PasswordMismatch" = "Las contraseñas no coinciden";
 "SignUpRequirement_InvalidEmailAndPassword" = "Ingresa un correo válido y contraseñas que coincidan.";
+//MARK: Error Handling
+"Error_InitializeAWS" = "Error al inicializar AWSMobileClient: ";
+"Error_InitializeAwsState" = "AWSMobileClient inicializado con el estado";
+"Error_SignupFailed" = "AWSMobileClient inicializado con el estado";
+"Error_UnknownAuthError" = "Ocurrió un error desconocido.";
+"Error_TokenExpiredError" = "Token expirado, por favor, inicie sesión nuevamente.";
+// MARK: - Biometric Authenticator Module
+"BiometricAuthenticator_UsePasswordAccountLabel" = "Usar contraseña";
+"BiometricAuthenticator_AccessAccountLabel" = "Autentíquese para acceder a su cuenta";
+"BiometricAuthenticator_FailedLabel" = "Autenticación fallida";
+// MARK: - Biometric Authenticator Error Handling
+"BiometricAuthenticatorError_BiometryNotAvailble" = "Face ID no está disponible en este dispositivo.";
+"BiometricAuthenticatorError_AuthenticationFailed" = "La autenticación con Face ID falló: ";
+"BiometricAuthenticatorError_ErrorUserCanceled" = "Autenticación cancelada por el usuario.";
+"BiometricAuthenticatorError_ErrorSystemCanceled" = "La autenticación fue interrumpida.";
+"BiometricAuthenticatorError_ErrorBiometryLockout" = "Demasiados intentos fallidos. Intente nuevamente más tarde o use una contraseña.";
+"BiometricAuthenticatorError_ErrorInvalidatedContext" = "La sesión de autenticación expiró. Intente nuevamente.";

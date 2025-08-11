@@ -31,3 +31,14 @@
 "Error_SignupFailed" = "AWSMobileClient initialized with state";
 "Error_UnknownAuthError" = "An unknown error occurred.";
 "Error_TokenExpiredError" = "Token Expired, please, Sign In again.";
+// MARK: - Biometric Authenticator Module
+"BiometricAuthenticator_UsePasswordAccountLabel" = "Use Password";
+"BiometricAuthenticator_AccessAccountLabel" = "Authenticate to access your account";
+"BiometricAuthenticator_FailedLabel" = "Authentication Failed";
+// MARK: - Biometric Authenticator Error Handling
+"BiometricAuthenticatorError_BiometryNotAvailble" = "Face ID is not available on this device.";
+"BiometricAuthenticatorError_AuthenticationFailed" = "Face ID authentication failed: ";
+"BiometricAuthenticatorError_ErrorUserCanceled" = "Authentication canceled by the user.";
+"BiometricAuthenticatorError_ErrorSystemCanceled" = "Authentication was interrupted.";
+"BiometricAuthenticatorError_ErrorBiometryLockout" = "Too many failed attempts. Try again later or use a password.";
+"BiometricAuthenticatorError_ErrorInvalidatedContext" = "Authentication session expired. Try again.";

@@ -22,12 +22,18 @@ open class AuthManager: ObservableObject {
 
     private var cancellables: Set<AnyCancellable> = []
     private var authService: AuthServiceProtocol
-    private var tokenProtocol: TokenManagerProtocol?
+    private var tokenProtocol: TokenManagerProtocol
     private var errorMapper: ErrorMapperProtocol
 
-    public init(authService: AuthServiceProtocol = AuthService(), errorMapper: ErrorMapperProtocol = ErrorMapper()) {
+    public init(
+        authService: AuthServiceProtocol = AuthService(),
+        errorMapper: ErrorMapperProtocol = ErrorMapper(),
+        tokenProtocol: TokenManagerProtocol
+    ) {
         self.authService = authService
         self.errorMapper = errorMapper
+        self.tokenProtocol = tokenProtocol
+        initializeAWS()
         checkUserState()
     }
 
@@ -68,6 +74,11 @@ open class AuthManager: ObservableObject {
                 retrieveIdToken()
                 retrieveRefreshToken()
                 retrieveAccessToken()
+                ensureFreshTokens { success in
+                    if !success {
+                        self.signOut()
+                    }
+                }
             }
         }
     }
@@ -119,10 +130,6 @@ open class AuthManager: ObservableObject {
         self.errorSubject.send(error.errorMessage)
     }
 
-    public func setTokenProtocol(_ tokenProtocol: TokenManagerProtocol) {
-        self.tokenProtocol = tokenProtocol
-    }
-
     open func clearErrorMessage() {
         self.errorSubject.send(nil)
     }
@@ -134,21 +141,21 @@ extension AuthManager {
 
     private func retrieveIdToken() {
         handlePublisher(authService.getTokenId()) { [weak self] token in
-            guard let self, let tokenProtocol else { return }
+            guard let self else { return }
             tokenProtocol.manageTokenId(idToken: token)
         }
     }
 
     private func retrieveRefreshToken() {
         handlePublisher(authService.getRefreshToken()) { [weak self] token in
-            guard let self, let tokenProtocol else { return }
+            guard let self else { return }
             tokenProtocol.manageRefreshToken(refreshToken: token)
         }
     }
 
     private func retrieveAccessToken() {
         handlePublisher(authService.getAccessToken()) { [weak self] token in
-            guard let self, let tokenProtocol else { return }
+            guard let self else { return }
             tokenProtocol.manageAccessToken(accessToken: token)
         }
     }
@@ -163,12 +170,12 @@ extension AuthManager {
                     completion(.failure(.networkError(error)))
                 }
             }, receiveValue: { [weak self] newTokens in
-                guard let self, let tokenProtocol else {
+                guard let self else {
                     completion(.failure(.tokenProtocolUnavailable))
                     return
                 }
 
-                tokenProtocol.clearAllTokens()
+                //                tokenProtocol.clearAllTokens()
                 tokenProtocol.manageTokenId(idToken: newTokens.idToken)
                 tokenProtocol.manageAccessToken(accessToken: newTokens.accessToken)
 
@@ -195,6 +202,29 @@ extension AuthManager {
             }, receiveValue: { success($0) })
             .store(in: &cancellables)
     }
+
+    private func isAccessTokenExpired(_ token: String) -> Bool {
+        let parts = token.split(separator: ".")
+        guard parts.count == 3,
+              let payloadData = Data(base64URLEncoded: String(parts[1])),
+              let json = try? JSONSerialization.jsonObject(with: payloadData) as? [String: Any],
+              let exp = json["exp"] as? TimeInterval
+        else { return true }
+
+        let expiry = Date(timeIntervalSince1970: exp)
+        return expiry.addingTimeInterval(-60) <= Date() // margen 60s
+    }
+
+    public func ensureFreshTokens(completion: @escaping (Bool) -> Void) {
+        if let access = tokenProtocol.getAccessToken(), !isAccessTokenExpired(
+            access
+        ) {
+            completion(true); return
+        }
+        refreshTokensAndStore { result in
+            completion((try? result.get()) != nil)
+        }
+    }
 }
 
 public enum AuthError: Error {
@@ -219,5 +249,16 @@ extension AuthError {
         case .tokenRefreshFailed:
             return LocalizedStringKeys.ErrorTokenExpiredError
         }
+    }
+}
+
+private extension Data {
+    init?(base64URLEncoded: String) {
+        var base = base64URLEncoded
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let pad = 4 - base.count % 4
+        if pad < 4 { base += String(repeating: "=", count: pad) }
+        self.init(base64Encoded: base)
     }
 }

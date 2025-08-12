@@ -34,7 +34,6 @@ open class AuthManager: ObservableObject {
         self.errorMapper = errorMapper
         self.tokenProtocol = tokenProtocol
         initializeAWS()
-        checkUserState()
     }
 
     open func showSignUp() {
@@ -59,9 +58,9 @@ open class AuthManager: ObservableObject {
 #endif
 
             }
+            self.checkUserState()
         }
     }
-
     open func checkUserState(userName: String = "") {
         handlePublisher(authService.checkUserState()) { [weak self] userState in
             guard let self else { return }
@@ -105,14 +104,29 @@ open class AuthManager: ObservableObject {
     }
 
     open func signIn(username: String, password: String) {
-        handlePublisher(authService.signIn(username: username, password: password)) { [weak self] signInResult in
+        handlePublisher(authService.checkUserState()) { [weak self] current in
             guard let self else { return }
-            if signInResult == .signedIn {
-                isLoggedIn = true
-                checkUserState(userName: username)
-                retrieveIdToken()
-                retrieveRefreshToken()
-                retrieveAccessToken()
+
+            if current == .signedIn {
+                self.isLoggedIn = true
+                self.authStateSubject.send(.session(user: username))
+                self.retrieveIdToken()
+                self.retrieveRefreshToken()
+                self.retrieveAccessToken()
+                self.ensureFreshTokens { _ in }
+                self.errorSubject.send(nil)
+                return
+            }
+
+            self.handlePublisher(self.authService.signIn(username: username, password: password)) { [weak self] result in
+                guard let self else { return }
+                if result == .signedIn {
+                    self.isLoggedIn = true
+                    self.authStateSubject.send(.session(user: username))
+                    self.retrieveIdToken()
+                    self.retrieveRefreshToken()
+                    self.retrieveAccessToken()
+                }
             }
         }
     }
@@ -120,9 +134,10 @@ open class AuthManager: ObservableObject {
     open func signOut() {
         handlePublisher(authService.signOut()) { [weak self] in
             guard let self else { return }
-            isLoggedIn = false
-            checkUserState()
-            errorSubject.send(nil)
+            self.tokenProtocol.clearAllTokens()
+            self.isLoggedIn = false
+            self.authStateSubject.send(.login)
+            self.errorSubject.send(nil)
         }
     }
 

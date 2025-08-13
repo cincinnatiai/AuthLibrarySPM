@@ -12,5 +12,6 @@ public protocol TokenManagerProtocol: AnyObject {
     func manageRefreshToken(refreshToken: String)
     func manageAccessToken(accessToken: String)
     func getAccessToken() -> String?
+    func getIdToken() -> String?
     func clearAllTokens()
 }

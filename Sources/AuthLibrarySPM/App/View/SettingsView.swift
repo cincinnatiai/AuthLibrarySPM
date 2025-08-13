@@ -12,7 +12,6 @@ public struct SettingsView: View {
     @EnvironmentObject public var authManager: AuthManager
     @State private var isBiometricEnabled: Bool = FeatureFlags.shared.isBiometricLoginEnabled
     
-    
     public init() { }
     
     public var body: some View {

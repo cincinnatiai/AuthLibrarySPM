@@ -42,3 +42,7 @@
 "BiometricAuthenticatorError_ErrorSystemCanceled" = "La autenticación fue interrumpida.";
 "BiometricAuthenticatorError_ErrorBiometryLockout" = "Demasiados intentos fallidos. Intente nuevamente más tarde o use una contraseña.";
 "BiometricAuthenticatorError_ErrorInvalidatedContext" = "La sesión de autenticación expiró. Intente nuevamente.";
+"BiometricAuthenticatorError_ErrorEnterEmailPassword" = "Por favor, introduce el correo electrónico y la contraseña.";
+"BiometricAuthenticatorError_ErrorCredentialsNotFound" = "No se encontraron credenciales guardadas.";
+"BiometricAuthenticatorError_ErrorFaceIdPermissionDenied" = "Permiso de Face ID denegado.";
+

@@ -25,7 +25,9 @@ public struct LoginView: BaseLoginView {
             loginButton
             errorMessageLabel
             Spacer().frame(height: 30)
-            faceIDToggle
+            if FeatureFlags.shared.isBiometricLoginEnabled{
+                faceIDToggle
+            }
             Spacer()
             signUpButton
         }

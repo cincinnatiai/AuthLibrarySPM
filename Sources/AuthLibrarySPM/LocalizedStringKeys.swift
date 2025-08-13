@@ -49,5 +49,7 @@ public enum LocalizedStringKeys {
     public static let BiometricAuthenticatorErrorSystemCanceled = "BiometricAuthenticatorError_ErrorSystemCanceled".localized
     public static let BiometricAuthenticatorErrorBiometryLockout = "BiometricAuthenticatorError_ErrorBiometryLockout".localized
     public static let BiometricAuthenticatorErrorInvalidatedContext = "BiometricAuthenticatorError_ErrorInvalidatedContext".localized
-    
+    public static let BiometricAuthenticatorErrorErrorEnterEmailPassword = "BiometricAuthenticatorError_ErrorEnterEmailPassword".localized
+    public static let BiometricAuthenticatorErrorCredentialsNotFound = "BiometricAuthenticatorError_ErrorCredentialsNotFound".localized
+    public static let BiometricAuthenticatorErrorFaceIdPermissionDenied = "BiometricAuthenticatorError_ErrorFaceIdPermissionDenied".localized
 }

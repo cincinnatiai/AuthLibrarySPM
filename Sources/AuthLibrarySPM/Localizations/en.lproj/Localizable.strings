@@ -42,3 +42,6 @@
 "BiometricAuthenticatorError_ErrorSystemCanceled" = "Authentication was interrupted.";
 "BiometricAuthenticatorError_ErrorBiometryLockout" = "Too many failed attempts. Try again later or use a password.";
 "BiometricAuthenticatorError_ErrorInvalidatedContext" = "Authentication session expired. Try again.";
+"BiometricAuthenticatorError_ErrorEnterEmailPassword" = "Please enter email and password.";
+"BiometricAuthenticatorError_ErrorCredentialsNotFound" = "No saved credentials found.";
+"BiometricAuthenticatorError_ErrorFaceIdPermissionDenied" = "Face ID permission denied.";

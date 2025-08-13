@@ -19,16 +19,27 @@ open class AuthManager: ObservableObject {
     public private(set) var errorSubject = PassthroughSubject<String?, Never>()
     public var authStatePublisher: AnyPublisher<AuthState, Never> { authStateSubject.eraseToAnyPublisher() }
     public var errorPublisher: AnyPublisher<String?, Never> { errorSubject.eraseToAnyPublisher() }
+    public private(set) var tokensReadySubject = CurrentValueSubject<Bool, Never>(false)
+    public var tokensReadyPublisher: AnyPublisher<Bool, Never> { tokensReadySubject.eraseToAnyPublisher() }
 
     private var cancellables: Set<AnyCancellable> = []
     private var authService: AuthServiceProtocol
-    private var tokenProtocol: TokenManagerProtocol?
+    private var tokenProtocol: TokenManagerProtocol
     private var errorMapper: ErrorMapperProtocol
 
-    public init(authService: AuthServiceProtocol = AuthService(), errorMapper: ErrorMapperProtocol = ErrorMapper()) {
+    private var didInitializeAWS = false
+
+
+    @MainActor
+    public init(
+        authService: AuthServiceProtocol = AuthService(),
+        errorMapper: ErrorMapperProtocol = ErrorMapper(),
+        tokenProtocol: TokenManagerProtocol
+    ) {
         self.authService = authService
         self.errorMapper = errorMapper
-        checkUserState()
+        self.tokenProtocol = tokenProtocol
+        initializeAWS()
     }
 
     open func showSignUp() {
@@ -39,19 +50,31 @@ open class AuthManager: ObservableObject {
         authStateSubject.send(.login)
     }
 
-    // TODO: Move to AuthService
+    @MainActor
     open func initializeAWS() {
-        AWSMobileClient.default().initialize { (userState, error) in
-            if let error = error {
-#if DEBUG
-                print(LocalizedStringKeys.ErrorInitializeAWS, error.localizedDescription)
-#endif
-            } else if let userState = userState {
-#if DEBUG
+        guard !didInitializeAWS else { return }
+        didInitializeAWS = true
 
-                print(LocalizedStringKeys.ErrorInitializeAwsState, userState.rawValue)
-#endif
+        AWSMobileClient.default().initialize { [weak self] (userState, error) in
+            Task { @MainActor in
+    #if DEBUG
+                if let error { print(LocalizedStringKeys.ErrorInitializeAWS, error.localizedDescription) }
+                if let userState { print(LocalizedStringKeys.ErrorInitializeAwsState, userState.rawValue) }
+    #endif
+                self?.checkUserState()
+            }
+        }
+    }
 
+    private func prepareTokensAndNotify() {
+        retrieveIdToken { [weak self] in
+            guard let self else { return }
+            self.retrieveAccessToken { [weak self] in
+                guard let self else { return }
+                self.retrieveRefreshToken()
+                self.ensureFreshTokens { [weak self] _ in
+                    self?.tokensReadySubject.send(true)
+                }
             }
         }
     }
@@ -65,9 +88,11 @@ open class AuthManager: ObservableObject {
             errorSubject.send(nil)
 
             if isLoggedIn {
-                retrieveIdToken()
-                retrieveRefreshToken()
-                retrieveAccessToken()
+                prepareTokensAndNotify()
+            } else {
+                authStateSubject.value = .login
+                errorSubject.send(nil)
+                tokensReadySubject.send(false)
             }
         }
     }
@@ -94,14 +119,24 @@ open class AuthManager: ObservableObject {
     }
 
     open func signIn(username: String, password: String) {
-        handlePublisher(authService.signIn(username: username, password: password)) { [weak self] signInResult in
+        handlePublisher(authService.checkUserState()) { [weak self] current in
             guard let self else { return }
-            if signInResult == .signedIn {
-                isLoggedIn = true
-                checkUserState(userName: username)
-                retrieveIdToken()
-                retrieveRefreshToken()
-                retrieveAccessToken()
+
+            if current == .signedIn {
+                self.isLoggedIn = true
+                self.authStateSubject.send(.session(user: username))
+                self.prepareTokensAndNotify()
+                self.errorSubject.send(nil)
+                return
+            }
+
+            self.handlePublisher(self.authService.signIn(username: username, password: password)) { [weak self] result in
+                guard let self else { return }
+                if result == .signedIn {
+                    self.isLoggedIn = true
+                    self.authStateSubject.send(.session(user: username))
+                    self.prepareTokensAndNotify()
+                }
             }
         }
     }
@@ -109,18 +144,16 @@ open class AuthManager: ObservableObject {
     open func signOut() {
         handlePublisher(authService.signOut()) { [weak self] in
             guard let self else { return }
-            isLoggedIn = false
-            checkUserState()
-            errorSubject.send(nil)
+            self.tokenProtocol.clearAllTokens()
+            self.isLoggedIn = false
+            self.authStateSubject.send(.login)
+            self.errorSubject.send(nil)
+            self.tokensReadySubject.send(false)
         }
     }
 
     open func handleError(_ error: AuthError) {
         self.errorSubject.send(error.errorMessage)
-    }
-
-    public func setTokenProtocol(_ tokenProtocol: TokenManagerProtocol) {
-        self.tokenProtocol = tokenProtocol
     }
 
     open func clearErrorMessage() {
@@ -132,24 +165,26 @@ open class AuthManager: ObservableObject {
 @available(iOS 13.0, *)
 extension AuthManager {
 
-    private func retrieveIdToken() {
+    private func retrieveIdToken(completion: (() -> Void)? = nil) {
         handlePublisher(authService.getTokenId()) { [weak self] token in
-            guard let self, let tokenProtocol else { return }
+            guard let self else { return }
             tokenProtocol.manageTokenId(idToken: token)
+            completion?()
         }
     }
 
     private func retrieveRefreshToken() {
         handlePublisher(authService.getRefreshToken()) { [weak self] token in
-            guard let self, let tokenProtocol else { return }
+            guard let self else { return }
             tokenProtocol.manageRefreshToken(refreshToken: token)
         }
     }
 
-    private func retrieveAccessToken() {
+    private func retrieveAccessToken(completion: (() -> Void)? = nil) {
         handlePublisher(authService.getAccessToken()) { [weak self] token in
-            guard let self, let tokenProtocol else { return }
+            guard let self else { return }
             tokenProtocol.manageAccessToken(accessToken: token)
+            completion?()
         }
     }
 
@@ -163,12 +198,10 @@ extension AuthManager {
                     completion(.failure(.networkError(error)))
                 }
             }, receiveValue: { [weak self] newTokens in
-                guard let self, let tokenProtocol else {
+                guard let self else {
                     completion(.failure(.tokenProtocolUnavailable))
                     return
                 }
-
-                tokenProtocol.clearAllTokens()
                 tokenProtocol.manageTokenId(idToken: newTokens.idToken)
                 tokenProtocol.manageAccessToken(accessToken: newTokens.accessToken)
 
@@ -195,6 +228,38 @@ extension AuthManager {
             }, receiveValue: { success($0) })
             .store(in: &cancellables)
     }
+
+    private func isJWTExpired(_ token: String?) -> Bool {
+        guard let token, !token.isEmpty else { return true }
+        let parts = token.split(separator: ".")
+        guard parts.count == 3,
+              let payloadData = Data(base64URLEncoded: String(parts[1])),
+              let json = try? JSONSerialization.jsonObject(with: payloadData) as? [String: Any],
+              let exp = json["exp"] as? TimeInterval
+        else { return true }
+        let expiry = Date(timeIntervalSince1970: exp)
+        return expiry.addingTimeInterval(-60) <= Date()
+    }
+
+    public func ensureFreshTokens(completion: @escaping (Bool) -> Void) {
+        let idTok  = tokenProtocol.getIdToken()
+        let accTok = tokenProtocol.getAccessToken()
+
+        if !isJWTExpired(idTok) && !isJWTExpired(accTok) {
+            completion(true); return
+        }
+
+        refreshTokensAndStore { [weak self] result in
+            switch result {
+            case .success:
+                completion(true)
+            case .failure:
+                 self?.handleError(.tokenRefreshFailed)
+                 self?.signOut()
+                completion(false)
+            }
+        }
+    }
 }
 
 public enum AuthError: Error {
@@ -219,5 +284,16 @@ extension AuthError {
         case .tokenRefreshFailed:
             return LocalizedStringKeys.ErrorTokenExpiredError
         }
+    }
+}
+
+private extension Data {
+    init?(base64URLEncoded: String) {
+        var base = base64URLEncoded
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let pad = 4 - base.count % 4
+        if pad < 4 { base += String(repeating: "=", count: pad) }
+        self.init(base64Encoded: base)
     }
 }

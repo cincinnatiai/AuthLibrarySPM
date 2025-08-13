@@ -103,7 +103,7 @@ public struct LoginView: BaseLoginView {
     }
 }
 
-@available(iOS 17.0, *)
-#Preview {
-    LoginView(viewModel: LoginViewModel(authManager: AuthManager(), preferences: FaceIDPreferencesManager()))
-}
+//@available(iOS 17.0, *)
+//#Preview {
+//    LoginView(viewModel: LoginViewModel(authManager: AuthManager(), preferences: FaceIDPreferencesManager()))
+//}

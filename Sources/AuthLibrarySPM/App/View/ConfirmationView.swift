@@ -35,7 +35,7 @@ public struct ConfirmationView: View {
     }
 }
 
-@available(iOS 14.0, *)
-#Preview {
-    ConfirmationView(viewModel: ConfirmationViewModel(authManager: AuthManager(), username: LocalizedStringKeys.ConfirmationViewUsernamePreview))
-}
+//@available(iOS 14.0, *)
+//#Preview {
+//    ConfirmationView(viewModel: ConfirmationViewModel(authManager: AuthManager(), username: LocalizedStringKeys.ConfirmationViewUsernamePreview))
+//}

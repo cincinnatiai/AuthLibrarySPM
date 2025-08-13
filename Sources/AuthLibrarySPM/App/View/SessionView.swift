@@ -46,7 +46,7 @@ public struct SessionView: View {
     }
 }
 
-@available(iOS 14.0, *)
-#Preview {
-    SessionView(viewModel: SessionViewModel(authManager: AuthManager(), user: "user"))
-}
+//@available(iOS 14.0, *)
+//#Preview {
+//    SessionView(viewModel: SessionViewModel(authManager: AuthManager(), user: "user"))
+//}

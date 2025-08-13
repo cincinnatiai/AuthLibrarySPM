@@ -17,6 +17,7 @@ public struct SettingsView: View {
     public var body: some View {
         VStack {
             Spacer()
+#if DEBUG
             Toggle("Biometric Login Feature", isOn: $isBiometricEnabled)
                 .padding()
                 .onChange(of: isBiometricEnabled) { newValue in
@@ -27,12 +28,15 @@ public struct SettingsView: View {
                  : "Biometric Login is disabled")
             .font(.subheadline)
             .padding(.bottom, 8)
+#endif
             Button(LocalizedStringKeys.GeneralSignOutButton, action: authManager.signOut)
                 .buttonStyle()
                 .padding()
             Spacer()
                 .onAppear {
+#if DEBUG
                     isBiometricEnabled = FeatureFlags.shared.isBiometricLoginEnabled
+#endif
                 }
         }
     }

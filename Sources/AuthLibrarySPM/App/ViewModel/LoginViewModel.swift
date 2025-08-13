@@ -40,10 +40,10 @@ public class LoginViewModel: AuthViewModel {
     public func login() async {
         if !email.isEmpty && !password.isEmpty {
             manualLogin()
-        } else if isFaceIDEnabled {
+        } else if FeatureFlags.shared.isBiometricLoginEnabled && isFaceIDEnabled {
             await authenticateAndLogin()
         } else {
-            errorMessage = "Please enter email and password."
+            errorMessage = LocalizedStringKeys.BiometricAuthenticatorErrorErrorEnterEmailPassword
         }
     }
 
@@ -54,7 +54,7 @@ public class LoginViewModel: AuthViewModel {
     }
 
     public func tryAutoLogin() async {
-        guard preferences.isAppRelaunch, isFaceIDEnabled else { return }
+        guard preferences.isAppRelaunch, FeatureFlags.shared.isBiometricLoginEnabled, isFaceIDEnabled else { return }
         preferences.isAppRelaunch = false
         await authenticateAndLogin()
     }
@@ -67,7 +67,7 @@ public class LoginViewModel: AuthViewModel {
             guard try await faceIDAuthenticator.authenticate() else { return }
 
             guard let credentials = fetchStoredCredentials() else {
-                handleAuthenticationError("No saved credentials found.")
+                handleAuthenticationError(LocalizedStringKeys.BiometricAuthenticatorErrorCredentialsNotFound)
                 return
             }
 
@@ -90,6 +90,10 @@ public class LoginViewModel: AuthViewModel {
     }
 
     public func toggleFaceID(_ enabled: Bool) async {
+        guard FeatureFlags.shared.isBiometricLoginEnabled else {
+                isFaceIDEnabled = false
+                return
+            }
         guard enabled else {
             isFaceIDEnabled = false
             return
@@ -107,7 +111,7 @@ public class LoginViewModel: AuthViewModel {
             errorMessage = error.localizedDescription
             isFaceIDEnabled = false
         } catch {
-            errorMessage = "Face ID permission denied"
+            errorMessage = LocalizedStringKeys.BiometricAuthenticatorErrorFaceIdPermissionDenied
             isFaceIDEnabled = false
         }
     }

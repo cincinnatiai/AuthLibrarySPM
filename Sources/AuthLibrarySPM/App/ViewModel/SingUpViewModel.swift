@@ -6,14 +6,32 @@
 //
 
 import SwiftUI
+import Combine
 
 @available(iOS 13.0, *)
-public class SignUpViewModel: AuthViewModel {
+@MainActor
+public final class SignUpViewModel: ObservableObject {
+    // MARK: Public properties
     @Published public var email: String = ""
     @Published public var password: String = ""
     @Published public var confirmPassword: String = ""
     @Published public var showConfirmationCodeView: Bool = false
+    public let authVM: AuthViewModel
+    public var authManager: AuthManager { authVM.authManager }
 
+    // MARK: Private properties
+    private let keychain = KeychainManager()
+
+    // MARK: Initializer
+    public init(authViewModel: AuthViewModel) {
+        self.authVM = authViewModel
+    }
+
+    public convenience init(authManager: AuthManager) {
+        self.init(authViewModel: AuthViewModel(authManager: authManager))
+    }
+
+    // MARK: Validations
     var signUpRequirements: [SignUpRequirements] {
         [
             SignUpRequirements(text: LocalizedStringKeys.SignUpRequirementValidEmail) {
@@ -40,34 +58,38 @@ public class SignUpViewModel: AuthViewModel {
         ]
     }
 
-    private let keychain = KeychainManager()
+    // MARK: - Public methods
 
-    override public init(authManager: AuthManager) {
-        super.init(authManager: authManager)
-    }
+    public func clearErrorMessage() {
+          authVM.clearErrorMessage()
+      }
 
     public func signUp() {
-        guard !email.isEmpty, !password.isEmpty, password == confirmPassword else {
-            self.errorMessage = LocalizedStringKeys.SignUpRequirementInvalidEmailAndPassword
-            handleActionResult()
+        guard requirementsFulfilled() else {
+            authVM.errorMessage = LocalizedStringKeys.SignUpRequirementInvalidEmailAndPassword
+            authVM.handleActionResult()
             return
         }
 
         keychain.set(password, key: CredentialsKeys.password.rawValue)
-        keychain.set(email, key: CredentialsKeys.email.rawValue)
+        keychain.set(email,   key: CredentialsKeys.email.rawValue)
 
         let attributes = ["email": email, "name": email]
         authManager.signUp(username: email, password: password, attributes: attributes)
-        handleActionResult()
 
-        if self.errorMessage == nil {
+        authVM.handleActionResult()
+
+        if authVM.errorMessage == nil {
             showConfirmationCodeView = true
         }
     }
 
-    public override func showLogin() {
-        super.showLogin()
+    public func showLogin() {
+        authVM.showLogin()
     }
+
+    @ViewBuilder
+    public var errorTextView: some View { authVM.errorTextView }
 
     public func requirementsFulfilled() -> Bool {
         signUpRequirements.allSatisfy { $0.isValid() }

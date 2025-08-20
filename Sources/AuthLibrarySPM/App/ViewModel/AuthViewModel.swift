@@ -9,62 +9,59 @@ import SwiftUI
 import Combine
 
 @available(iOS 13.0, *)
-public class AuthViewModel: ObservableObject {
-
+@MainActor
+public final class AuthViewModel: ObservableObject {
+    // MARK: Public properties
     @Published public var showError: Bool = false
     @Published public var authState: AuthState = .login
     @Published public var errorMessage: String? = nil
-
     public let authManager: AuthManager
 
+    // MARK: Private properties
     private var cancellables = Set<AnyCancellable>()
 
+    // MARK: Initializer
     public init(authManager: AuthManager) {
         self.authManager = authManager
         observeAuthManager()
     }
 
+    // MARK: Public methods
     public func clearErrorMessage() {
         authManager.clearErrorMessage()
         showError = false
     }
 
+    public func handleActionResult() {
+        showError = (errorMessage != nil)
+    }
+
+    public func showSignUp() { authManager.showSignUp() }
+    public func showLogin()  { authManager.showLogin()  }
+
+    @ViewBuilder
+    public var errorTextView: some View {
+        if let errorMessage {
+            Text(errorMessage).foregroundColor(.red)
+        } else {
+            EmptyView()
+        }
+    }
+
+    // MARK: Private properties
     private func observeAuthManager() {
         authManager.authStatePublisher
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] authState in
-                self?.authState = authState
-            }
+            .sink { [weak self] s in self?.authState = s }
             .store(in: &cancellables)
 
         authManager.errorPublisher
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] error in
-                self?.errorMessage = error
-                self?.showError = error != nil
+            .sink { [weak self] e in
+                self?.errorMessage = e
+                self?.showError = (e != nil)
             }
             .store(in: &cancellables)
-    }
-
-    public func handleActionResult() {
-        showError = (self.errorMessage != nil)
-    }
-
-    open func showSignUp() {
-        authManager.showLogin()
-    }
-
-    open func showLogin() {
-        authManager.showLogin()
-    }
-
-    open var errorTextView: some View {
-        if let errorMessage = errorMessage {
-            return AnyView(Text(errorMessage)
-                .foregroundColor(.red))
-        } else {
-            return AnyView(EmptyView())
-        }
     }
 }
 
